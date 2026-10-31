@@ -48,6 +48,5 @@
     "skills": ["Product design", "Frontend development", "Prototyping", "Design systems", "Writing"]
   },
   "resumeFile": "",
-  "featuredProjects": ["field-notes", "goodside", "open-studio"],
   "featuredPosts": ["making-space-for-the-details", "a-small-guide-to-good-interfaces"]
 }

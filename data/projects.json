@@ -8,7 +8,7 @@
     "image": "",
     "imageAlt": "",
     "accent": "peach",
-    "tags": ["Product design", "Research", "Interface design"],
+    "tags": ["Featured", "Product design", "Research", "Interface design"],
     "liveUrl": "",
     "repoUrl": "",
     "content": "content/projects/field-notes.md"
@@ -36,7 +36,7 @@
     "image": "",
     "imageAlt": "",
     "accent": "lavender",
-    "tags": ["Frontend", "Accessibility", "Interface design"],
+    "tags": ["Featured", "Frontend", "Accessibility", "Interface design"],
     "liveUrl": "",
     "repoUrl": "",
     "content": "content/projects/open-studio.md"

@@ -188,8 +188,9 @@ function projectCard(project) {
   const image = project.image
     ? `<img src="${escapeHtml(safeUrl(project.image))}" alt="${escapeHtml(project.imageAlt || project.title)}" loading="lazy">`
     : `<span class="cover-monogram" aria-hidden="true">${escapeHtml(project.title.slice(0, 1))}</span>`;
+  const isFeatured = contentTags(project).some((tag) => tag.toLocaleLowerCase() === "featured");
   return `
-    <article class="project-card" data-note-card data-search="${escapeHtml(`${project.title} ${project.description} ${project.category} ${(project.tags || []).join(" ")}`.toLowerCase())}" data-tags="${escapeHtml(JSON.stringify(contentTags(project).map((tag) => tag.toLocaleLowerCase())))}">
+    <article class="project-card${isFeatured ? " is-featured-project" : ""}" data-note-card data-search="${escapeHtml(`${project.title} ${project.description} ${project.category} ${(project.tags || []).join(" ")}`.toLowerCase())}" data-tags="${escapeHtml(JSON.stringify(contentTags(project).map((tag) => tag.toLocaleLowerCase())))}">
       <a class="project-cover-link" href="#/projects/${encodeURIComponent(project.slug)}"><div class="project-cover cover-${escapeHtml(project.accent || "peach")}">${image}<span class="cover-arrow" aria-hidden="true">↗</span></div></a>
       <div class="card-meta"><span>${escapeHtml(project.category)}</span><span>${(project.tags || []).slice(0, 2).map(escapeHtml).join(" · ")}</span></div>
       <h3><a href="#/projects/${encodeURIComponent(project.slug)}">${escapeHtml(project.title)}</a></h3>
@@ -211,7 +212,7 @@ function postCard(post) {
 
 function renderTagChips(tags = []) {
   if (!tags.length) return "";
-  return `<div class="tag-chips">${tags.map((tag) => `<button class="tag-chip" type="button" data-select-tag="${escapeHtml(tag)}">#${escapeHtml(tag)}</button>`).join("")}</div>`;
+  return `<div class="tag-chips">${tags.map((tag) => `<button class="tag-chip${tag.toLocaleLowerCase() === "featured" ? " is-featured-tag" : ""}" type="button" data-select-tag="${escapeHtml(tag)}">#${escapeHtml(tag)}</button>`).join("")}</div>`;
 }
 
 function contentTags(item) {
@@ -227,60 +228,83 @@ function renderGraph(items, label = "Knowledge graph", linkTags = false) {
   const tagMap = new Map();
   items.forEach((item) => contentTags(item).forEach((tag) => {
     const key = tag.toLocaleLowerCase();
-    if (!tagMap.has(key)) tagMap.set(key, tag);
+    if (!tagMap.has(key)) tagMap.set(key, { label: tag, items: [] });
+    const tagItems = tagMap.get(key).items;
+    if (!tagItems.some((entry) => `${entry.type}:${entry.slug}` === `${item.type}:${item.slug}`)) {
+      tagItems.push(item);
+    }
   }));
-  const tags = [...tagMap.values()].sort((a, b) => a.localeCompare(b));
+  const tags = [...tagMap.values()].sort((a, b) => a.label.localeCompare(b.label));
   if (!items.length) return `<div class="graph-empty">No notes to connect yet.</div>`;
 
-  const width = 1000;
-  const columnCounts = items.reduce((counts, item) => {
-    const column = item.type === "project" ? "right" : "left";
-    counts[column] = (counts[column] || 0) + 1;
-    return counts;
-  }, {});
-  const height = Math.max(510, tags.length * 69 + 100, Math.max(...Object.values(columnCounts)) * 72 + 100);
-  const centerX = width / 2;
-  const top = 56;
-  const bottom = height - 56;
-  const tagPositions = new Map(tags.map((tag, index) => [
-    tag.toLocaleLowerCase(),
-    { x: centerX, y: tags.length < 2 ? height / 2 : top + (bottom - top) * index / (tags.length - 1) },
-  ]));
-  const itemsByColumn = { left: [], right: [] };
-  items.forEach((item) => itemsByColumn[item.type === "project" ? "right" : "left"].push(item));
-  const itemPositions = new Map();
-  Object.entries(itemsByColumn).forEach(([column, columnItems]) => {
-    columnItems.forEach((item, index) => {
-      itemPositions.set(`${item.type}:${item.slug}`, {
-        x: column === "left" ? 205 : 795,
-        y: columnItems.length < 2 ? height / 2 : top + (bottom - top) * index / (columnItems.length - 1),
-      });
-    });
+  const columns = Math.min(3, Math.max(1, Math.ceil(Math.sqrt(tags.length))));
+  const clusterWidth = 340;
+  const clusterHeight = 270;
+  const width = Math.max(650, columns * clusterWidth);
+  const rows = Math.ceil(tags.length / columns);
+  const height = Math.max(300, rows * clusterHeight);
+  const edges = [];
+  const tagNodes = [];
+  const contentNodes = [];
+  const tagPositions = new Map();
+
+  tags.forEach(({ label: tag, items: related }, tagIndex) => {
+    const column = tagIndex % columns;
+    const row = Math.floor(tagIndex / columns);
+    const center = {
+      x: column * clusterWidth + clusterWidth / 2,
+      y: row * clusterHeight + clusterHeight / 2,
+    };
+    const tagId = tag.toLocaleLowerCase();
+    const featuredTag = tagId === "featured";
+    tagPositions.set(tagId, center);
+    const tagNode = `<g class="graph-tag-node${featuredTag ? " is-featured" : ""}" data-tag-node="${escapeHtml(tag)}" role="button" tabindex="0" aria-label="Filter by tag ${escapeHtml(tag)}" transform="translate(${center.x} ${center.y})"><circle r="29"/><text class="graph-hash" y="5">#</text><text class="graph-tag-label" y="47">${escapeHtml(tag)}</text></g>`;
+    tagNodes.push(linkTags ? `<a class="graph-tag-link" href="#/graph?tag=${encodeURIComponent(tag)}" aria-label="Explore the ${escapeHtml(tag)} tag">${tagNode}</a>` : tagNode);
   });
 
-  const edges = items.flatMap((item) => contentTags(item).map((tag) => {
-    const from = itemPositions.get(`${item.type}:${item.slug}`);
-    const to = tagPositions.get(tag.toLocaleLowerCase());
-    if (!to) return "";
-    return `<line class="graph-edge" data-edge-note="${escapeHtml(`${item.type}:${item.slug}`)}" x1="${from.x}" y1="${from.y}" x2="${to.x}" y2="${to.y}"/>`;
-  })).join("");
-  const tagNodes = tags.map((tag) => {
-    const position = tagPositions.get(tag.toLocaleLowerCase());
-    const node = `<g class="graph-tag-node" data-tag-node="${escapeHtml(tag)}" role="button" tabindex="0" aria-label="Filter by tag ${escapeHtml(tag)}" transform="translate(${position.x} ${position.y})"><circle r="25"/><text class="graph-hash" y="5">#</text><text class="graph-tag-label" y="42">${escapeHtml(tag)}</text></g>`;
-    return linkTags ? `<a class="graph-tag-link" href="#/graph?tag=${encodeURIComponent(tag)}" aria-label="Explore the ${escapeHtml(tag)} tag">${node}</a>` : node;
-  }).join("");
-  const contentNodes = items.map((item) => {
-    const position = itemPositions.get(`${item.type}:${item.slug}`);
+  const uniqueItems = [...new Map(items.map((item) => [`${item.type}:${item.slug}`, item])).values()];
+  const positionedItems = uniqueItems.map((item) => {
     const id = `${item.type}:${item.slug}`;
-    const anchor = item.type === "project" ? "start" : "end";
-    const labelX = item.type === "project" ? 25 : -25;
-    const title = item.title.length > 27 ? `${item.title.slice(0, 26).trimEnd()}…` : item.title;
-    return `<a class="graph-item-node graph-item-${item.type}" data-graph-item="${escapeHtml(id)}" data-search="${escapeHtml(`${item.title} ${item.description || item.excerpt || ""} ${contentTags(item).join(" ")}`.toLocaleLowerCase())}" data-tags="${escapeHtml(JSON.stringify(contentTags(item).map((tag) => tag.toLocaleLowerCase())))}" href="${contentHref(item)}" aria-label="Open ${escapeHtml(item.title)}"><circle r="8"/><text x="${labelX}" y="4" text-anchor="${anchor}">${escapeHtml(title)}</text><title>${escapeHtml(item.title)} · ${(contentTags(item)).map(escapeHtml).join(", ")}</title></a>`;
-  }).join("");
+    const relatedTags = contentTags(item)
+      .map((tag) => tagPositions.get(tag.toLocaleLowerCase()))
+      .filter(Boolean);
+    if (!relatedTags.length) return { item, id, point: { x: width / 2, y: height / 2 } };
+    const point = relatedTags.reduce((center, position) => ({
+      x: center.x + position.x / relatedTags.length,
+      y: center.y + position.y / relatedTags.length,
+    }), { x: 0, y: 0 });
+    return { item, id, point };
+  });
+  const coincidentPoints = new Map();
+  positionedItems.forEach(({ point }) => {
+    const key = `${Math.round(point.x)}:${Math.round(point.y)}`;
+    coincidentPoints.set(key, (coincidentPoints.get(key) || 0) + 1);
+  });
+  const pointOffsets = new Map();
+  positionedItems.forEach(({ item, id, point }) => {
+    const pointKey = `${Math.round(point.x)}:${Math.round(point.y)}`;
+    const groupSize = coincidentPoints.get(pointKey);
+    const index = pointOffsets.get(pointKey) || 0;
+    pointOffsets.set(pointKey, index + 1);
+    const angle = -Math.PI / 2 + (Math.PI * 2 * index) / groupSize;
+    const radius = groupSize > 1 ? 44 : 66;
+    const nodePoint = {
+      x: point.x + Math.cos(angle) * radius,
+      y: point.y + Math.sin(angle) * radius,
+    };
+    const featured = item.type === "project" && contentTags(item).some((tag) => tag.toLocaleLowerCase() === "featured");
+    const title = item.title.length > 24 ? `${item.title.slice(0, 23).trimEnd()}…` : item.title;
 
-  const leftLabel = items.some((item) => item.type === "blog") ? "NOTES" : "";
-  const rightLabel = items.some((item) => item.type === "project") ? "PROJECTS" : "";
-  return `<svg class="graph-svg" viewBox="0 0 ${width} ${height}" role="group" aria-label="${escapeHtml(label)} connecting notes through shared tags">${leftLabel ? `<text class="graph-column-label" x="30" y="28">${leftLabel}</text>` : ""}${rightLabel ? `<text class="graph-column-label" x="970" y="28" text-anchor="end">${rightLabel}</text>` : ""}<g aria-hidden="true">${edges}</g>${tagNodes}${contentNodes}</svg>`;
+    contentTags(item).forEach((tag) => {
+      const tagPoint = tagPositions.get(tag.toLocaleLowerCase());
+      if (tagPoint) {
+        edges.push(`<line class="graph-edge${featured ? " is-featured" : ""}" data-edge-note="${escapeHtml(id)}" x1="${tagPoint.x}" y1="${tagPoint.y}" x2="${nodePoint.x}" y2="${nodePoint.y}"/>`);
+      }
+    });
+    contentNodes.push(`<a class="graph-item-node graph-item-${item.type}${featured ? " is-featured" : ""}" transform="translate(${nodePoint.x} ${nodePoint.y})" data-graph-item="${escapeHtml(id)}" data-search="${escapeHtml(`${item.title} ${item.description || item.excerpt || ""} ${contentTags(item).join(" ")}`.toLocaleLowerCase())}" data-tags="${escapeHtml(JSON.stringify(contentTags(item).map((tag) => tag.toLocaleLowerCase())))}" href="${contentHref(item)}" aria-label="Open ${escapeHtml(item.title)}"><circle r="${featured ? 9 : 7}"/><text x="0" y="22" text-anchor="middle">${escapeHtml(title)}</text><title>${escapeHtml(item.title)} · ${contentTags(item).map(escapeHtml).join(", ")}</title></a>`);
+  });
+
+  return `<svg class="graph-svg" viewBox="0 0 ${width} ${height}" role="group" aria-label="${escapeHtml(label)} connecting notes around central tags"><g aria-hidden="true">${edges.join("")}</g>${tagNodes.join("")}${contentNodes.join("")}</svg>`;
 }
 
 function allGraphItems() {
@@ -323,9 +347,9 @@ function shell(eyebrow, title, lead, content) {
 }
 
 function renderHome() {
-  const featuredProjects = (site.featuredProjects || [])
-    .map((slug) => projects.find((project) => project.slug === slug))
-    .filter(Boolean);
+  const featuredProjects = projects.filter((project) =>
+    contentTags(project).some((tag) => tag.toLocaleLowerCase() === "featured"),
+  );
   const featuredPosts = (site.featuredPosts || [])
     .map((slug) => posts.find((post) => post.slug === slug))
     .filter(Boolean);
@@ -364,7 +388,36 @@ function renderHome() {
 
 function renderProjects(initialTag = "") {
   const items = projects.map((project) => ({ ...project, type: "project" }));
-  return collectionExplorer("Projects", "A collection of things I’ve helped bring into the world.", items, "projects", initialTag);
+  const featured = items.filter((project) => contentTags(project).some((tag) => tag.toLocaleLowerCase() === "featured"));
+  const other = items.filter((project) => !featured.includes(project));
+  const projectList = (entries) => entries.map(projectCard).join("");
+  return `
+    <section class="page-section projects-workspace vault-collection" data-collection="projects" data-graph-visible="true" data-list-visible="true">
+      <header class="page-heading"><p class="eyebrow"><span class="eyebrow-dot"></span>THE VAULT / PROJECTS</p><h1>Projects</h1><p class="page-lead">A collection of things I’ve helped bring into the world. Follow shared tags or browse the project notes.</p></header>
+      <div class="workspace-toolbar">
+        <label class="note-search"><span aria-hidden="true">⌕</span><input type="search" data-note-search placeholder="Search projects and tags…" aria-label="Search projects and tags" value="${escapeHtml(initialTag)}"></label>
+        <div class="workspace-pane-toggles" role="group" aria-label="Show or hide project panes">
+          <button type="button" data-toggle-pane="graph" aria-pressed="true"><span aria-hidden="true">◉</span> Graph</button>
+          <button type="button" data-toggle-pane="list" aria-pressed="true"><span aria-hidden="true">☷</span> Projects</button>
+        </div>
+      </div>
+      <div class="project-panes">
+        <section class="project-pane graph-pane" data-project-pane="graph" aria-label="Project graph">
+          <header class="project-pane-heading"><div><p class="eyebrow">01 / CONNECTIONS</p><h2>Project graph</h2></div><button class="pane-minimize" type="button" data-collapse-pane="graph" aria-label="Minimize project graph" title="Minimize graph">−</button></header>
+          <div class="pane-graph-wrap" data-graph-panel>${renderGraph(items, "Project graph")}<p class="graph-help">Featured projects glow amber. Select a project or tag to explore.</p><p class="graph-no-results" data-graph-no-results hidden>No connected projects match that search.</p></div>
+          <button class="pane-restore" type="button" data-restore-pane="graph" hidden>＋ Show graph</button>
+        </section>
+        <section class="project-pane project-list-pane" data-project-pane="list" aria-label="Project list">
+          <header class="project-pane-heading"><div><p class="eyebrow">02 / PROJECT NOTES</p><h2>All projects <span data-project-count>${projects.length}</span></h2></div><button class="pane-minimize" type="button" data-collapse-pane="list" aria-label="Minimize project list" title="Minimize list">−</button></header>
+          <div class="project-list-content" data-list-panel>
+            ${featured.length ? `<section class="featured-projects"><div class="list-section-heading"><h3>Featured</h3><span>PINNED / ${String(featured.length).padStart(2, "0")}</span></div><div class="project-card-list">${projectList(featured)}</div></section>` : ""}
+            <section class="other-projects"><div class="list-section-heading"><h3>More projects</h3><span>${String(other.length).padStart(2, "0")} NOTES</span></div><div class="project-card-list">${projectList(other)}</div></section>
+            <p class="no-results" data-no-results hidden>No projects match that search. Try another word or tag.</p>
+          </div>
+          <button class="pane-restore" type="button" data-restore-pane="list" hidden>＋ Show project list</button>
+        </section>
+      </div>
+    </section>`;
 }
 
 function renderBlog(initialTag = "") {
@@ -378,9 +431,104 @@ function renderKnowledgeGraph(initialTag = "") {
   return collectionExplorer("Knowledge graph", "A map of notes and projects, connected by the ideas they share.", allGraphItems(), "graph", initialTag);
 }
 
+function initializeProjectsWorkspace(collection, initialTag = "") {
+  const search = collection.querySelector("[data-note-search]");
+  const graphPane = collection.querySelector('[data-project-pane="graph"]');
+  const listPane = collection.querySelector('[data-project-pane="list"]');
+  const graphPanel = collection.querySelector("[data-graph-panel]");
+  const listPanel = collection.querySelector("[data-list-panel]");
+  const noResults = collection.querySelector("[data-no-results]");
+  const graphNoResults = collection.querySelector("[data-graph-no-results]");
+  const projectCount = collection.querySelector("[data-project-count]");
+  const toggleButtons = collection.querySelectorAll("[data-toggle-pane]");
+  if (initialTag) search.value = initialTag;
+
+  const setPane = (paneName, visible) => {
+    const pane = paneName === "graph" ? graphPane : listPane;
+    pane.hidden = !visible;
+    collection.dataset[`${paneName}Visible`] = String(visible);
+    toggleButtons.forEach((button) => {
+      if (button.dataset.togglePane === paneName) {
+        button.setAttribute("aria-pressed", String(visible));
+        button.classList.toggle("is-active", visible);
+      }
+    });
+  };
+
+  const togglePane = (paneName) => {
+    const isGraph = paneName === "graph";
+    const pane = isGraph ? graphPane : listPane;
+    const visible = pane.hidden;
+    if (!visible && (isGraph ? listPane.hidden : graphPane.hidden)) return;
+    setPane(paneName, visible);
+  };
+
+  const applyFilter = () => {
+    const term = search.value.trim().toLocaleLowerCase();
+    let visibleCount = 0;
+    collection.querySelectorAll("[data-note-card]").forEach((card) => {
+      const visible = !term || card.dataset.search.includes(term);
+      card.hidden = !visible;
+      if (visible) visibleCount += 1;
+    });
+
+    const graphItems = [...collection.querySelectorAll("[data-graph-item]")];
+    const visibleGraphNodes = new Map();
+    graphItems.forEach((node) => {
+      const visible = !term || node.dataset.search.includes(term);
+      node.classList.toggle("is-filtered", !visible);
+      visibleGraphNodes.set(node.dataset.graphItem, visible || visibleGraphNodes.get(node.dataset.graphItem) || false);
+    });
+    collection.querySelectorAll("[data-edge-note]").forEach((edge) => {
+      edge.classList.toggle("is-filtered", !visibleGraphNodes.get(edge.dataset.edgeNote));
+    });
+    collection.querySelectorAll("[data-tag-node]").forEach((tagNode) => {
+      const tag = tagNode.dataset.tagNode.toLocaleLowerCase();
+      const connected = graphItems.some((node) =>
+        visibleGraphNodes.get(node.dataset.graphItem) &&
+        JSON.parse(node.dataset.tags).includes(tag),
+      );
+      tagNode.classList.toggle("is-filtered", !connected);
+      tagNode.classList.toggle("is-selected", term === tag);
+    });
+    noResults.hidden = visibleCount > 0;
+    graphNoResults.hidden = visibleCount > 0;
+    projectCount.textContent = String(visibleCount);
+  };
+
+  toggleButtons.forEach((button) => button.addEventListener("click", () => togglePane(button.dataset.togglePane)));
+  collection.querySelectorAll("[data-collapse-pane]").forEach((button) => {
+    button.addEventListener("click", () => togglePane(button.dataset.collapsePane));
+  });
+  search.addEventListener("input", applyFilter);
+  collection.addEventListener("click", (event) => {
+    const tagButton = event.target.closest("[data-select-tag]");
+    const graphTag = event.target.closest("[data-tag-node]");
+    const tag = tagButton?.dataset.selectTag || graphTag?.dataset.tagNode;
+    if (!tag) return;
+    search.value = tag;
+    applyFilter();
+  });
+  collection.addEventListener("keydown", (event) => {
+    if ((event.key === "Enter" || event.key === " ") && event.target.matches("[data-tag-node]")) {
+      event.preventDefault();
+      search.value = event.target.dataset.tagNode;
+      applyFilter();
+    }
+  });
+
+  setPane("graph", true);
+  setPane("list", true);
+  applyFilter();
+}
+
 function initializeCollectionExplorer(initialTag = "") {
   const collection = app.querySelector(".vault-collection");
   if (!collection) return;
+  if (collection.dataset.collection === "projects") {
+    initializeProjectsWorkspace(collection, initialTag);
+    return;
+  }
   const search = collection.querySelector("[data-note-search]");
   const graphPanel = collection.querySelector("[data-graph-panel]");
   const listPanel = collection.querySelector("[data-list-panel]");
@@ -404,7 +552,7 @@ function initializeCollectionExplorer(initialTag = "") {
     graphItems.forEach((node) => {
       const visible = !term || node.dataset.search.includes(term);
       node.classList.toggle("is-filtered", !visible);
-      visibleGraphNodes.set(node.dataset.graphItem, visible);
+      visibleGraphNodes.set(node.dataset.graphItem, visible || visibleGraphNodes.get(node.dataset.graphItem) || false);
     });
     collection.querySelectorAll("[data-edge-note]").forEach((edge) => {
       edge.classList.toggle("is-filtered", !visibleGraphNodes.get(edge.dataset.edgeNote));
