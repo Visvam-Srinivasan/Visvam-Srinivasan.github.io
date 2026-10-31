@@ -154,9 +154,7 @@
     "titlePrefix": "Reach ",
     "titleEmphasis": "out!",
     "lead": "Would love to hear any questions, suggestions or opportunities!",
-    "panelEyebrow": "For projects, conversations, or a nice hello",
-    "emailLabel": "Email",
-    "socialAction": "Connect"
+    "emailLabel": "Email"
   },
   "detail": {
     "notFoundEyebrow": "Not found",

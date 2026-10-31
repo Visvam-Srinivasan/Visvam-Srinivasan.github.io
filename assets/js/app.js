@@ -942,11 +942,11 @@ function renderContact() {
   const labels = copy.contact;
   const email = safeUrl(`mailto:${site.email || ""}`);
   const socials = (site.socials || [])
-    .map((social) => `<a class="contact-method" ${linkAttributes(social.url)}><span class="contact-method-label">${escapeHtml(social.label)}</span><strong>${escapeHtml(labels.socialAction)}</strong><span class="contact-method-arrow" aria-hidden="true">↗</span></a>`)
+    .map((social) => `<a class="contact-method" ${linkAttributes(social.url)} aria-label="${escapeHtml(social.label)}"><strong>${escapeHtml(social.label)}</strong><span class="contact-method-arrow" aria-hidden="true">↗</span></a>`)
     .join("");
   const title = `${escapeHtml(labels.titlePrefix)}<span class="serif-accent">${escapeHtml(labels.titleEmphasis)}</span>`;
   return shell(labels.eyebrow, title, labels.lead, `
-    <div class="contact-panel"><span class="contact-icon" aria-hidden="true">↗</span><p class="eyebrow">${escapeHtml(labels.panelEyebrow)}</p><div class="contact-methods"><a class="contact-method contact-email" href="${escapeHtml(email)}"><span class="contact-method-label">${escapeHtml(labels.emailLabel)}</span><strong>${escapeHtml(site.email)}</strong><span class="contact-method-arrow" aria-hidden="true">↗</span></a>${socials}</div></div>`);
+    <div class="contact-methods"><a class="contact-method" href="${escapeHtml(email)}" aria-label="${escapeHtml(labels.emailLabel)}"><strong>${escapeHtml(labels.emailLabel)}</strong><span class="contact-method-arrow" aria-hidden="true">↗</span></a>${socials}</div>`);
 }
 
 async function renderDetail(type, slug) {
