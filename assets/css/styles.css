@@ -661,6 +661,10 @@ html[data-theme="dark"] .contact-panel { background: var(--panel); }
 .graph-panel { overflow: auto; border: 1px solid var(--line); border-radius: 8px; background-color: var(--white); background-image: radial-gradient(#8b7ccb20 1px, transparent 1px); background-size: 20px 20px; }
 html[data-theme="dark"] .graph-panel { background-image: radial-gradient(#a68ae81c 1px, transparent 1px); }
 .graph-svg { display: block; width: 100%; min-width: 720px; height: auto; }
+.graph-svg [data-graph-node] { cursor: grab; touch-action: none; user-select: none; }
+.graph-svg [data-graph-node]:active { cursor: grabbing; }
+.graph-svg [data-graph-node].is-dragging { cursor: grabbing; }
+.graph-svg [data-graph-node]:focus-visible { outline: none; filter: drop-shadow(0 0 4px var(--orange)); }
 .graph-edge { stroke: var(--line); stroke-width: 1.5; transition: opacity .16s ease; }
 .graph-edge.is-filtered { opacity: .06; }
 .graph-tag-node { cursor: pointer; outline: none; transition: opacity .16s ease; }

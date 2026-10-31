@@ -238,15 +238,16 @@ function renderGraph(items, label = "Knowledge graph", linkTags = false) {
   if (!items.length) return `<div class="graph-empty">No notes to connect yet.</div>`;
 
   const columns = Math.min(3, Math.max(1, Math.ceil(Math.sqrt(tags.length))));
-  const clusterWidth = 340;
-  const clusterHeight = 270;
-  const width = Math.max(650, columns * clusterWidth);
+  const clusterWidth = 360;
+  const clusterHeight = 330;
+  const width = Math.max(760, columns * clusterWidth);
   const rows = Math.ceil(tags.length / columns);
-  const height = Math.max(300, rows * clusterHeight);
+  const height = Math.max(520, rows * clusterHeight);
   const edges = [];
   const tagNodes = [];
   const contentNodes = [];
   const tagPositions = new Map();
+  const layoutNodes = [];
 
   tags.forEach(({ label: tag, items: related }, tagIndex) => {
     const column = tagIndex % columns;
@@ -258,7 +259,8 @@ function renderGraph(items, label = "Knowledge graph", linkTags = false) {
     const tagId = tag.toLocaleLowerCase();
     const featuredTag = tagId === "featured";
     tagPositions.set(tagId, center);
-    const tagNode = `<g class="graph-tag-node${featuredTag ? " is-featured" : ""}" data-tag-node="${escapeHtml(tag)}" role="button" tabindex="0" aria-label="Filter by tag ${escapeHtml(tag)}" transform="translate(${center.x} ${center.y})"><circle r="29"/><text class="graph-hash" y="5">#</text><text class="graph-tag-label" y="47">${escapeHtml(tag)}</text></g>`;
+    layoutNodes.push({ key: `tag:${tagId}`, type: "tag", x: center.x, y: center.y, anchorX: center.x, anchorY: center.y, radius: 45 });
+    const tagNode = `<g class="graph-tag-node${featuredTag ? " is-featured" : ""}" data-graph-node data-graph-key="tag:${escapeHtml(tagId)}" data-node-x="${center.x}" data-node-y="${center.y}" data-tag-node="${escapeHtml(tag)}" role="button" tabindex="0" aria-label="Filter by tag ${escapeHtml(tag)}" transform="translate(${center.x} ${center.y})"><circle r="29"/><text class="graph-hash" y="5">#</text><text class="graph-tag-label" y="47">${escapeHtml(tag)}</text></g>`;
     tagNodes.push(linkTags ? `<a class="graph-tag-link" href="#/graph?tag=${encodeURIComponent(tag)}" aria-label="Explore the ${escapeHtml(tag)} tag">${tagNode}</a>` : tagNode);
   });
 
@@ -273,38 +275,274 @@ function renderGraph(items, label = "Knowledge graph", linkTags = false) {
       x: center.x + position.x / relatedTags.length,
       y: center.y + position.y / relatedTags.length,
     }), { x: 0, y: 0 });
-    return { item, id, point };
-  });
-  const coincidentPoints = new Map();
-  positionedItems.forEach(({ point }) => {
-    const key = `${Math.round(point.x)}:${Math.round(point.y)}`;
-    coincidentPoints.set(key, (coincidentPoints.get(key) || 0) + 1);
-  });
-  const pointOffsets = new Map();
-  positionedItems.forEach(({ item, id, point }) => {
-    const pointKey = `${Math.round(point.x)}:${Math.round(point.y)}`;
-    const groupSize = coincidentPoints.get(pointKey);
-    const index = pointOffsets.get(pointKey) || 0;
-    pointOffsets.set(pointKey, index + 1);
-    const angle = -Math.PI / 2 + (Math.PI * 2 * index) / groupSize;
-    const radius = groupSize > 1 ? 44 : 66;
-    const nodePoint = {
-      x: point.x + Math.cos(angle) * radius,
-      y: point.y + Math.sin(angle) * radius,
+    const angle = (uniqueItems.indexOf(item) + 1) * 2.399963229728653;
+    const offset = 72 + Math.sqrt(uniqueItems.indexOf(item)) * 14;
+    return {
+      item,
+      id,
+      point: { x: point.x + Math.cos(angle) * offset, y: point.y + Math.sin(angle) * offset },
     };
+  });
+
+  positionedItems.forEach(({ item, id, point }) => {
+    const nodePoint = point;
     const featured = item.type === "project" && contentTags(item).some((tag) => tag.toLocaleLowerCase() === "featured");
     const title = item.title.length > 24 ? `${item.title.slice(0, 23).trimEnd()}…` : item.title;
+    const radius = Math.max(37, Math.min(78, title.length * 3.2 + 12));
+    layoutNodes.push({
+      key: `item:${id}`,
+      type: "item",
+      x: nodePoint.x,
+      y: nodePoint.y,
+      anchorX: nodePoint.x,
+      anchorY: nodePoint.y,
+      radius,
+    });
 
     contentTags(item).forEach((tag) => {
       const tagPoint = tagPositions.get(tag.toLocaleLowerCase());
       if (tagPoint) {
-        edges.push(`<line class="graph-edge${featured ? " is-featured" : ""}" data-edge-note="${escapeHtml(id)}" x1="${tagPoint.x}" y1="${tagPoint.y}" x2="${nodePoint.x}" y2="${nodePoint.y}"/>`);
+        edges.push({
+          id,
+          from: `tag:${tag.toLocaleLowerCase()}`,
+          to: `item:${id}`,
+          featured,
+        });
       }
     });
-    contentNodes.push(`<a class="graph-item-node graph-item-${item.type}${featured ? " is-featured" : ""}" transform="translate(${nodePoint.x} ${nodePoint.y})" data-graph-item="${escapeHtml(id)}" data-search="${escapeHtml(`${item.title} ${item.description || item.excerpt || ""} ${contentTags(item).join(" ")}`.toLocaleLowerCase())}" data-tags="${escapeHtml(JSON.stringify(contentTags(item).map((tag) => tag.toLocaleLowerCase())))}" href="${contentHref(item)}" aria-label="Open ${escapeHtml(item.title)}"><circle r="${featured ? 9 : 7}"/><text x="0" y="22" text-anchor="middle">${escapeHtml(title)}</text><title>${escapeHtml(item.title)} · ${contentTags(item).map(escapeHtml).join(", ")}</title></a>`);
+    contentNodes.push(`<a class="graph-item-node graph-item-${item.type}${featured ? " is-featured" : ""}" data-graph-node data-graph-key="item:${escapeHtml(id)}" data-node-x="${nodePoint.x}" data-node-y="${nodePoint.y}" transform="translate(${nodePoint.x} ${nodePoint.y})" data-graph-item="${escapeHtml(id)}" data-search="${escapeHtml(`${item.title} ${item.description || item.excerpt || ""} ${contentTags(item).join(" ")}`.toLocaleLowerCase())}" data-tags="${escapeHtml(JSON.stringify(contentTags(item).map((tag) => tag.toLocaleLowerCase())))}" href="${contentHref(item)}" aria-label="Open ${escapeHtml(item.title)}"><circle r="${featured ? 9 : 7}"/><text x="0" y="22" text-anchor="middle">${escapeHtml(title)}</text><title>${escapeHtml(item.title)} · ${contentTags(item).map(escapeHtml).join(", ")}</title></a>`);
   });
 
-  return `<svg class="graph-svg" viewBox="0 0 ${width} ${height}" role="group" aria-label="${escapeHtml(label)} connecting notes around central tags"><g aria-hidden="true">${edges.join("")}</g>${tagNodes.join("")}${contentNodes.join("")}</svg>`;
+  optimizeGraphLayout(layoutNodes, items, width, height);
+  layoutNodes.forEach((node) => {
+    const [kind, ...identity] = node.key.split(":");
+    const key = identity.join(":");
+    const markup = kind === "tag" ? tagNodes : contentNodes;
+    const index = kind === "tag"
+      ? tags.findIndex(({ label: tag }) => tag.toLocaleLowerCase() === key)
+      : positionedItems.findIndex(({ id }) => id === key);
+    if (index >= 0) {
+      markup[index] = markup[index]
+        .replace(/data-node-x="[^"]+"/, `data-node-x="${node.x}"`)
+        .replace(/data-node-y="[^"]+"/, `data-node-y="${node.y}"`)
+        .replace(/transform="translate\([^"]+\)"/, `transform="translate(${node.x} ${node.y})"`);
+    }
+  });
+  const nodeByKey = new Map(layoutNodes.map((node) => [node.key, node]));
+  const edgeMarkup = edges.map(({ id, from, to, featured }) => {
+    const source = nodeByKey.get(from);
+    const target = nodeByKey.get(to);
+    return `<line class="graph-edge${featured ? " is-featured" : ""}" data-edge-note="${escapeHtml(id)}" data-edge-from="${escapeHtml(from)}" data-edge-to="${escapeHtml(to)}" x1="${source.x}" y1="${source.y}" x2="${target.x}" y2="${target.y}"/>`;
+  }).join("");
+  const graphId = label.toLocaleLowerCase().replace(/[^a-z0-9]+/g, "-");
+  return `<svg class="graph-svg" data-graph-id="${graphId}" viewBox="0 0 ${width} ${height}" role="group" aria-label="${escapeHtml(label)} connecting notes around central tags"><g aria-hidden="true">${edgeMarkup}</g>${tagNodes.join("")}${contentNodes.join("")}</svg>`;
+}
+
+function optimizeGraphLayout(nodes, items, width, height) {
+  if (nodes.length < 2) return;
+  const nodeByKey = new Map(nodes.map((node) => [node.key, node]));
+  const links = items.flatMap((item) => contentTags(item).map((tag) => ({
+    from: `tag:${tag.toLocaleLowerCase()}`,
+    to: `item:${item.type}:${item.slug}`,
+  }))).filter((link) => nodeByKey.has(link.from) && nodeByKey.has(link.to));
+  const cellSize = 190;
+  const iterations = Math.min(180, Math.max(70, Math.ceil(9000 / nodes.length)));
+  const orientation = (a, b, c) => (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+  const segmentsCross = (first, second) => {
+    if (first.from === second.from || first.to === second.to || first.from === second.to || first.to === second.from) return false;
+    const a = nodeByKey.get(first.from);
+    const b = nodeByKey.get(first.to);
+    const c = nodeByKey.get(second.from);
+    const d = nodeByKey.get(second.to);
+    return orientation(a, b, c) * orientation(a, b, d) < 0 &&
+      orientation(c, d, a) * orientation(c, d, b) < 0;
+  };
+
+  for (let iteration = 0; iteration < iterations; iteration += 1) {
+    const forces = new Map(nodes.map((node) => [node.key, { x: 0, y: 0 }]));
+    const buckets = new Map();
+    nodes.forEach((node) => {
+      const cellX = Math.floor(node.x / cellSize);
+      const cellY = Math.floor(node.y / cellSize);
+      const bucketKey = `${cellX}:${cellY}`;
+      if (!buckets.has(bucketKey)) buckets.set(bucketKey, []);
+      buckets.get(bucketKey).push(node);
+    });
+    nodes.forEach((node) => {
+      const cellX = Math.floor(node.x / cellSize);
+      const cellY = Math.floor(node.y / cellSize);
+      for (let x = cellX - 1; x <= cellX + 1; x += 1) {
+        for (let y = cellY - 1; y <= cellY + 1; y += 1) {
+          for (const other of buckets.get(`${x}:${y}`) || []) {
+            if (other.key <= node.key) continue;
+            const dx = node.x - other.x;
+            const dy = node.y - other.y;
+            const distance = Math.max(1, Math.hypot(dx, dy));
+            const minimum = node.radius + other.radius + 22;
+            const desired = Math.max(minimum, 145);
+            if (distance >= desired) continue;
+            const strength = distance < minimum ? 0.32 : 0.035;
+            const magnitude = (desired - distance) * strength / distance;
+            const force = forces.get(node.key);
+            const opposite = forces.get(other.key);
+            force.x += dx * magnitude;
+            force.y += dy * magnitude;
+            opposite.x -= dx * magnitude;
+            opposite.y -= dy * magnitude;
+          }
+        }
+      }
+    });
+    links.forEach(({ from, to }) => {
+      const source = nodeByKey.get(from);
+      const target = nodeByKey.get(to);
+      const dx = target.x - source.x;
+      const dy = target.y - source.y;
+      const distance = Math.max(1, Math.hypot(dx, dy));
+      const magnitude = (distance - 135) * 0.006 / distance;
+      forces.get(from).x += dx * magnitude;
+      forces.get(from).y += dy * magnitude;
+      forces.get(to).x -= dx * magnitude;
+      forces.get(to).y -= dy * magnitude;
+    });
+
+    if (links.length <= 240 && iteration % 3 === 0) {
+      for (let firstIndex = 0; firstIndex < links.length; firstIndex += 1) {
+        const first = links[firstIndex];
+        const source = nodeByKey.get(first.from);
+        const target = nodeByKey.get(first.to);
+        for (let secondIndex = firstIndex + 1; secondIndex < links.length; secondIndex += 1) {
+          const second = links[secondIndex];
+          if (!segmentsCross(first, second)) continue;
+          const dx = target.x - source.x;
+          const dy = target.y - source.y;
+          const length = Math.max(1, Math.hypot(dx, dy));
+          const direction = first.to.localeCompare(second.to) < 0 ? 1 : -1;
+          const force = forces.get(first.to);
+          force.x += (-dy / length) * direction * 2;
+          force.y += (dx / length) * direction * 2;
+        }
+      }
+    }
+
+    nodes.forEach((node) => {
+      const force = forces.get(node.key);
+      const anchorStrength = node.type === "tag" ? 0.012 : 0.002;
+      force.x += (node.anchorX - node.x) * anchorStrength;
+      force.y += (node.anchorY - node.y) * anchorStrength;
+      node.vx = ((node.vx || 0) + force.x) * 0.72;
+      node.vy = ((node.vy || 0) + force.y) * 0.72;
+      node.x = Math.min(width - 95, Math.max(95, node.x + node.vx));
+      node.y = Math.min(height - 70, Math.max(55, node.y + node.vy));
+    });
+  }
+}
+
+function updateGraphEdges(graph) {
+  const nodes = new Map([...graph.querySelectorAll("[data-graph-node]")].map((node) => [node.dataset.graphKey, node]));
+  graph.querySelectorAll("[data-edge-from]").forEach((edge) => {
+    const from = nodes.get(edge.dataset.edgeFrom);
+    const to = nodes.get(edge.dataset.edgeTo);
+    if (!from || !to) return;
+    edge.setAttribute("x1", from.dataset.nodeX);
+    edge.setAttribute("y1", from.dataset.nodeY);
+    edge.setAttribute("x2", to.dataset.nodeX);
+    edge.setAttribute("y2", to.dataset.nodeY);
+  });
+}
+
+function initializeGraphInteractions(root = app) {
+  root.querySelectorAll(".graph-svg").forEach((graph) => {
+    const layoutKey = `portfolio-graph-layout:${graph.dataset.graphId}`;
+    let savedLayout = {};
+    try {
+      savedLayout = JSON.parse(localStorage.getItem(layoutKey) || "{}");
+    } catch (error) {
+      console.error(`Could not read the saved layout for ${graph.dataset.graphId}.`, error);
+    }
+
+    graph.querySelectorAll("[data-graph-node]").forEach((node) => {
+      const saved = savedLayout[node.dataset.graphKey];
+      if (!saved || !Number.isFinite(saved.x) || !Number.isFinite(saved.y)) return;
+      node.dataset.nodeX = String(saved.x);
+      node.dataset.nodeY = String(saved.y);
+      node.setAttribute("transform", `translate(${saved.x} ${saved.y})`);
+    });
+    updateGraphEdges(graph);
+
+    let dragState;
+    const toGraphPoint = (event) => {
+      const point = graph.createSVGPoint();
+      point.x = event.clientX;
+      point.y = event.clientY;
+      return point.matrixTransform(graph.getScreenCTM().inverse());
+    };
+    const saveLayout = () => {
+      const layout = Object.fromEntries([...graph.querySelectorAll("[data-graph-node]")].map((node) => [
+        node.dataset.graphKey,
+        { x: Number(node.dataset.nodeX), y: Number(node.dataset.nodeY) },
+      ]));
+      try {
+        localStorage.setItem(layoutKey, JSON.stringify(layout));
+      } catch (error) {
+        console.error(`Could not save the layout for ${graph.dataset.graphId}.`, error);
+      }
+    };
+
+    graph.addEventListener("pointerdown", (event) => {
+      const node = event.target.closest("[data-graph-node]");
+      if (!node || event.button !== 0) return;
+      const point = toGraphPoint(event);
+      dragState = {
+        node,
+        pointerId: event.pointerId,
+        startX: point.x,
+        startY: point.y,
+        nodeX: Number(node.dataset.nodeX),
+        nodeY: Number(node.dataset.nodeY),
+        moved: false,
+      };
+      node.classList.add("is-dragging");
+      node.setPointerCapture(event.pointerId);
+    });
+
+    graph.addEventListener("pointermove", (event) => {
+      if (!dragState || dragState.pointerId !== event.pointerId) return;
+      const point = toGraphPoint(event);
+      const deltaX = point.x - dragState.startX;
+      const deltaY = point.y - dragState.startY;
+      if (!dragState.moved && Math.hypot(deltaX, deltaY) < 3) return;
+      dragState.moved = true;
+      event.preventDefault();
+      const bounds = graph.viewBox.baseVal;
+      const x = Math.min(bounds.x + bounds.width - 55, Math.max(bounds.x + 55, dragState.nodeX + deltaX));
+      const y = Math.min(bounds.y + bounds.height - 45, Math.max(bounds.y + 45, dragState.nodeY + deltaY));
+      dragState.node.dataset.nodeX = String(x);
+      dragState.node.dataset.nodeY = String(y);
+      dragState.node.setAttribute("transform", `translate(${x} ${y})`);
+      updateGraphEdges(graph);
+    });
+
+    const finishDrag = (event) => {
+      if (!dragState || dragState.pointerId !== event.pointerId) return;
+      const { node, moved } = dragState;
+      dragState = undefined;
+      node.classList.remove("is-dragging");
+      if (!moved) return;
+      node.dataset.dragged = "true";
+      saveLayout();
+      setTimeout(() => delete node.dataset.dragged, 0);
+    };
+    graph.addEventListener("pointerup", finishDrag);
+    graph.addEventListener("pointercancel", finishDrag);
+    graph.addEventListener("click", (event) => {
+      const node = event.target.closest("[data-graph-node]");
+      if (!node?.dataset.dragged) return;
+      event.preventDefault();
+      event.stopPropagation();
+      delete node.dataset.dragged;
+    }, true);
+  });
 }
 
 function allGraphItems() {
@@ -326,7 +564,7 @@ function collectionExplorer(title, lead, items, collection, initialTag = "") {
         <div class="view-switch" role="group" aria-label="Choose collection view"><button type="button" data-view-mode="graph" aria-pressed="true"><span aria-hidden="true">⌘</span> Graph</button><button type="button" data-view-mode="list" aria-pressed="false"><span aria-hidden="true">☷</span> List</button></div>
       </div>
       <div class="collection-meta"><span data-result-count>${items.length} ${items.length === 1 ? countLabel.slice(0, -1) : countLabel}</span><span><i class="legend-note"></i> note <i class="legend-tag"></i> shared tag</span></div>
-      <div class="graph-panel" data-graph-panel>${renderGraph(items, title)}<p class="graph-help">Select a note to open it. Select a <span>#tag</span> node to filter connected notes.</p><p class="graph-no-results" data-graph-no-results hidden>No connected notes match that search.</p></div>
+      <div class="graph-panel" data-graph-panel>${renderGraph(items, title)}<p class="graph-help">Drag nodes to rearrange. Select a note to open it or select a <span>#tag</span> node to filter.</p><p class="graph-no-results" data-graph-no-results hidden>No connected notes match that search.</p></div>
       <div class="note-list-panel" data-list-panel hidden><div class="note-list-grid">${cards}</div><p class="no-results" data-no-results hidden>No ${countLabel} match that search. Try another word or tag.</p></div>
     </section>`;
 }
@@ -371,7 +609,7 @@ function renderHome() {
     </section>
     <section class="home-map">
       <div class="section-heading"><div><p class="eyebrow">MY NOTES IN CONTEXT</p><h2>Explore the vault</h2><p class="page-lead">Follow the shared ideas between notes and projects.</p></div><a class="text-link" href="#/graph">Open full graph <span aria-hidden="true">↗</span></a></div>
-      <div class="graph-panel home-graph">${renderGraph(graphItems, "Portfolio knowledge graph", true)}<p class="graph-help">Choose a note to open it, or a <span>#tag</span> to explore its connections.</p></div>
+      <div class="graph-panel home-graph">${renderGraph(graphItems, "Portfolio knowledge graph", true)}<p class="graph-help">Drag nodes to rearrange. Choose a note to open it, or a <span>#tag</span> to explore its connections.</p></div>
     </section>
     <section class="content-section">
       <div class="section-heading"><div><p class="eyebrow">A few things I’ve made</p><h2>Selected work</h2></div><a class="text-link" href="#/projects">All projects <span aria-hidden="true">→</span></a></div>
@@ -404,7 +642,7 @@ function renderProjects(initialTag = "") {
       <div class="project-panes">
         <section class="project-pane graph-pane" data-project-pane="graph" aria-label="Project graph">
           <header class="project-pane-heading"><div><p class="eyebrow">01 / CONNECTIONS</p><h2>Project graph</h2></div><button class="pane-minimize" type="button" data-collapse-pane="graph" aria-label="Minimize project graph" title="Minimize graph">−</button></header>
-          <div class="pane-graph-wrap" data-graph-panel>${renderGraph(items, "Project graph")}<p class="graph-help">Featured projects glow amber. Select a project or tag to explore.</p><p class="graph-no-results" data-graph-no-results hidden>No connected projects match that search.</p></div>
+          <div class="pane-graph-wrap" data-graph-panel>${renderGraph(items, "Project graph")}<p class="graph-help">Drag nodes to rearrange. Featured projects glow amber; select a project or tag to explore.</p><p class="graph-no-results" data-graph-no-results hidden>No connected projects match that search.</p></div>
           <button class="pane-restore" type="button" data-restore-pane="graph" hidden>＋ Show graph</button>
         </section>
         <section class="project-pane project-list-pane" data-project-pane="list" aria-label="Project list">
@@ -704,6 +942,7 @@ async function renderRoute() {
     }
     if (renderId !== activeRender) return;
     app.innerHTML = page;
+    initializeGraphInteractions(app);
     initializeCollectionExplorer(initialTag);
     document.title = `${section === "home" ? site.name : section.charAt(0).toUpperCase() + section.slice(1)} — ${site.name}`;
     document.querySelector("#main-content").focus({ preventScroll: true });
