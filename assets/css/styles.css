@@ -834,10 +834,10 @@ body { font-size: 16px; }
 .note-search input { font-size: 14px; }
 .view-switch button, .workspace-pane-toggles button { min-height: 36px; padding-right: 14px; padding-left: 14px; font-size: 13px; }
 .view-switch button[aria-pressed="true"], .workspace-pane-toggles button[aria-pressed="true"] {
-  background: var(--ink);
-  color: var(--paper);
-  font-weight: 700;
-  box-shadow: 0 0 0 2px var(--orange);
+  background: color-mix(in srgb, var(--orange) 9%, var(--white));
+  color: var(--ink);
+  font-weight: 600;
+  box-shadow: 0 0 9px color-mix(in srgb, var(--orange) 24%, transparent);
 }
 .about-portrait { margin: 0 0 23px; overflow: hidden; aspect-ratio: 4 / 5; border: 1px solid var(--line); border-radius: 6px; background: var(--white); }
 .about-portrait img { display: block; width: 100%; height: 100%; object-fit: cover; }
