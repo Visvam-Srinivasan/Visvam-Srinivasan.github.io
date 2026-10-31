@@ -189,22 +189,122 @@ function projectCard(project) {
     ? `<img src="${escapeHtml(safeUrl(project.image))}" alt="${escapeHtml(project.imageAlt || project.title)}" loading="lazy">`
     : `<span class="cover-monogram" aria-hidden="true">${escapeHtml(project.title.slice(0, 1))}</span>`;
   return `
-    <a class="project-card" href="#/projects/${encodeURIComponent(project.slug)}">
-      <div class="project-cover cover-${escapeHtml(project.accent || "peach")}">${image}<span class="cover-arrow" aria-hidden="true">↗</span></div>
+    <article class="project-card" data-note-card data-search="${escapeHtml(`${project.title} ${project.description} ${project.category} ${(project.tags || []).join(" ")}`.toLowerCase())}" data-tags="${escapeHtml(JSON.stringify(contentTags(project).map((tag) => tag.toLocaleLowerCase())))}">
+      <a class="project-cover-link" href="#/projects/${encodeURIComponent(project.slug)}"><div class="project-cover cover-${escapeHtml(project.accent || "peach")}">${image}<span class="cover-arrow" aria-hidden="true">↗</span></div></a>
       <div class="card-meta"><span>${escapeHtml(project.category)}</span><span>${(project.tags || []).slice(0, 2).map(escapeHtml).join(" · ")}</span></div>
-      <h3>${escapeHtml(project.title)}</h3>
+      <h3><a href="#/projects/${encodeURIComponent(project.slug)}">${escapeHtml(project.title)}</a></h3>
       <p>${escapeHtml(project.description)}</p>
-    </a>`;
+      ${renderTagChips(project.tags)}
+    </article>`;
 }
 
 function postCard(post) {
   return `
-    <a class="post-card" href="#/blog/${encodeURIComponent(post.slug)}">
+    <article class="post-card" data-note-card data-search="${escapeHtml(`${post.title} ${post.excerpt} ${post.category} ${(post.tags || []).join(" ")}`.toLowerCase())}" data-tags="${escapeHtml(JSON.stringify(contentTags(post).map((tag) => tag.toLocaleLowerCase())))}">
       <span class="post-date">${escapeHtml(post.category)} <span aria-hidden="true">·</span> ${formatDate(post.date)}</span>
-      <h3>${escapeHtml(post.title)} <span aria-hidden="true">↗</span></h3>
+      <h3><a href="#/blog/${encodeURIComponent(post.slug)}">${escapeHtml(post.title)} <span aria-hidden="true">↗</span></a></h3>
       <p>${escapeHtml(post.excerpt)}</p>
       <span class="read-time">${escapeHtml(post.readTime || "")}</span>
-    </a>`;
+      ${renderTagChips(post.tags)}
+    </article>`;
+}
+
+function renderTagChips(tags = []) {
+  if (!tags.length) return "";
+  return `<div class="tag-chips">${tags.map((tag) => `<button class="tag-chip" type="button" data-select-tag="${escapeHtml(tag)}">#${escapeHtml(tag)}</button>`).join("")}</div>`;
+}
+
+function contentTags(item) {
+  return [...new Set((item.tags || []).map((tag) => String(tag).trim()).filter(Boolean))];
+}
+
+function contentHref(item) {
+  const section = item.type === "project" ? "projects" : "blog";
+  return `#/${section}/${encodeURIComponent(item.slug)}`;
+}
+
+function renderGraph(items, label = "Knowledge graph", linkTags = false) {
+  const tagMap = new Map();
+  items.forEach((item) => contentTags(item).forEach((tag) => {
+    const key = tag.toLocaleLowerCase();
+    if (!tagMap.has(key)) tagMap.set(key, tag);
+  }));
+  const tags = [...tagMap.values()].sort((a, b) => a.localeCompare(b));
+  if (!items.length) return `<div class="graph-empty">No notes to connect yet.</div>`;
+
+  const width = 1000;
+  const columnCounts = items.reduce((counts, item) => {
+    const column = item.type === "project" ? "right" : "left";
+    counts[column] = (counts[column] || 0) + 1;
+    return counts;
+  }, {});
+  const height = Math.max(510, tags.length * 69 + 100, Math.max(...Object.values(columnCounts)) * 72 + 100);
+  const centerX = width / 2;
+  const top = 56;
+  const bottom = height - 56;
+  const tagPositions = new Map(tags.map((tag, index) => [
+    tag.toLocaleLowerCase(),
+    { x: centerX, y: tags.length < 2 ? height / 2 : top + (bottom - top) * index / (tags.length - 1) },
+  ]));
+  const itemsByColumn = { left: [], right: [] };
+  items.forEach((item) => itemsByColumn[item.type === "project" ? "right" : "left"].push(item));
+  const itemPositions = new Map();
+  Object.entries(itemsByColumn).forEach(([column, columnItems]) => {
+    columnItems.forEach((item, index) => {
+      itemPositions.set(`${item.type}:${item.slug}`, {
+        x: column === "left" ? 205 : 795,
+        y: columnItems.length < 2 ? height / 2 : top + (bottom - top) * index / (columnItems.length - 1),
+      });
+    });
+  });
+
+  const edges = items.flatMap((item) => contentTags(item).map((tag) => {
+    const from = itemPositions.get(`${item.type}:${item.slug}`);
+    const to = tagPositions.get(tag.toLocaleLowerCase());
+    if (!to) return "";
+    return `<line class="graph-edge" data-edge-note="${escapeHtml(`${item.type}:${item.slug}`)}" x1="${from.x}" y1="${from.y}" x2="${to.x}" y2="${to.y}"/>`;
+  })).join("");
+  const tagNodes = tags.map((tag) => {
+    const position = tagPositions.get(tag.toLocaleLowerCase());
+    const node = `<g class="graph-tag-node" data-tag-node="${escapeHtml(tag)}" role="button" tabindex="0" aria-label="Filter by tag ${escapeHtml(tag)}" transform="translate(${position.x} ${position.y})"><circle r="25"/><text class="graph-hash" y="5">#</text><text class="graph-tag-label" y="42">${escapeHtml(tag)}</text></g>`;
+    return linkTags ? `<a class="graph-tag-link" href="#/graph?tag=${encodeURIComponent(tag)}" aria-label="Explore the ${escapeHtml(tag)} tag">${node}</a>` : node;
+  }).join("");
+  const contentNodes = items.map((item) => {
+    const position = itemPositions.get(`${item.type}:${item.slug}`);
+    const id = `${item.type}:${item.slug}`;
+    const anchor = item.type === "project" ? "start" : "end";
+    const labelX = item.type === "project" ? 25 : -25;
+    const title = item.title.length > 27 ? `${item.title.slice(0, 26).trimEnd()}…` : item.title;
+    return `<a class="graph-item-node graph-item-${item.type}" data-graph-item="${escapeHtml(id)}" data-search="${escapeHtml(`${item.title} ${item.description || item.excerpt || ""} ${contentTags(item).join(" ")}`.toLocaleLowerCase())}" data-tags="${escapeHtml(JSON.stringify(contentTags(item).map((tag) => tag.toLocaleLowerCase())))}" href="${contentHref(item)}" aria-label="Open ${escapeHtml(item.title)}"><circle r="8"/><text x="${labelX}" y="4" text-anchor="${anchor}">${escapeHtml(title)}</text><title>${escapeHtml(item.title)} · ${(contentTags(item)).map(escapeHtml).join(", ")}</title></a>`;
+  }).join("");
+
+  const leftLabel = items.some((item) => item.type === "blog") ? "NOTES" : "";
+  const rightLabel = items.some((item) => item.type === "project") ? "PROJECTS" : "";
+  return `<svg class="graph-svg" viewBox="0 0 ${width} ${height}" role="group" aria-label="${escapeHtml(label)} connecting notes through shared tags">${leftLabel ? `<text class="graph-column-label" x="30" y="28">${leftLabel}</text>` : ""}${rightLabel ? `<text class="graph-column-label" x="970" y="28" text-anchor="end">${rightLabel}</text>` : ""}<g aria-hidden="true">${edges}</g>${tagNodes}${contentNodes}</svg>`;
+}
+
+function allGraphItems() {
+  return [
+    ...posts.map((post) => ({ ...post, type: "blog" })),
+    ...projects.map((project) => ({ ...project, type: "project" })),
+  ];
+}
+
+function collectionExplorer(title, lead, items, collection, initialTag = "") {
+  const plural = collection === "graph" ? "vault items" : collection;
+  const countLabel = collection === "graph" ? "items" : "notes";
+  const cards = items.map((item) => item.type === "project" ? projectCard(item) : postCard(item)).join("");
+  return `
+    <section class="page-section collection-page vault-collection" data-collection="${escapeHtml(collection)}">
+      <header class="page-heading"><p class="eyebrow"><span class="eyebrow-dot"></span>THE VAULT / ${escapeHtml(plural.toUpperCase())}</p><h1>${escapeHtml(title)}</h1><p class="page-lead">${escapeHtml(lead)}</p></header>
+      <div class="collection-toolbar">
+        <label class="note-search"><span aria-hidden="true">⌕</span><input type="search" data-note-search placeholder="Search notes and tags…" aria-label="Search notes and tags" value="${escapeHtml(initialTag)}"></label>
+        <div class="view-switch" role="group" aria-label="Choose collection view"><button type="button" data-view-mode="graph" aria-pressed="true"><span aria-hidden="true">⌘</span> Graph</button><button type="button" data-view-mode="list" aria-pressed="false"><span aria-hidden="true">☷</span> List</button></div>
+      </div>
+      <div class="collection-meta"><span data-result-count>${items.length} ${items.length === 1 ? countLabel.slice(0, -1) : countLabel}</span><span><i class="legend-note"></i> note <i class="legend-tag"></i> shared tag</span></div>
+      <div class="graph-panel" data-graph-panel>${renderGraph(items, title)}<p class="graph-help">Select a note to open it. Select a <span>#tag</span> node to filter connected notes.</p><p class="graph-no-results" data-graph-no-results hidden>No connected notes match that search.</p></div>
+      <div class="note-list-panel" data-list-panel hidden><div class="note-list-grid">${cards}</div><p class="no-results" data-no-results hidden>No ${countLabel} match that search. Try another word or tag.</p></div>
+    </section>`;
 }
 
 function formatDate(value) {
@@ -229,6 +329,7 @@ function renderHome() {
   const featuredPosts = (site.featuredPosts || [])
     .map((slug) => posts.find((post) => post.slug === slug))
     .filter(Boolean);
+  const graphItems = allGraphItems();
   return `
     <section class="hero">
       <div class="hero-copy">
@@ -244,6 +345,10 @@ function renderHome() {
         <span class="art-caption">${escapeHtml(site.artCaption || "")}</span>
       </div>
     </section>
+    <section class="home-map">
+      <div class="section-heading"><div><p class="eyebrow">MY NOTES IN CONTEXT</p><h2>Explore the vault</h2><p class="page-lead">Follow the shared ideas between notes and projects.</p></div><a class="text-link" href="#/graph">Open full graph <span aria-hidden="true">↗</span></a></div>
+      <div class="graph-panel home-graph">${renderGraph(graphItems, "Portfolio knowledge graph", true)}<p class="graph-help">Choose a note to open it, or a <span>#tag</span> to explore its connections.</p></div>
+    </section>
     <section class="content-section">
       <div class="section-heading"><div><p class="eyebrow">A few things I’ve made</p><h2>Selected work</h2></div><a class="text-link" href="#/projects">All projects <span aria-hidden="true">→</span></a></div>
       <div class="project-grid">${featuredProjects.map(projectCard).join("")}</div>
@@ -257,15 +362,95 @@ function renderHome() {
     </section>`;
 }
 
-function renderProjects() {
-  return shell("Selected work", "Projects", "A collection of things I’ve helped bring into the world.", `
-    <div class="project-grid project-grid-page">${projects.map(projectCard).join("")}</div>`);
+function renderProjects(initialTag = "") {
+  const items = projects.map((project) => ({ ...project, type: "project" }));
+  return collectionExplorer("Projects", "A collection of things I’ve helped bring into the world.", items, "projects", initialTag);
 }
 
-function renderBlog() {
-  const sortedPosts = [...posts].sort((a, b) => new Date(b.date) - new Date(a.date));
-  return shell("Ideas & observations", "The journal", "Notes on design, making things, and everything in between.", `
-    <div class="post-list">${sortedPosts.map(postCard).join("")}</div>`);
+function renderBlog(initialTag = "") {
+  const items = [...posts]
+    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .map((post) => ({ ...post, type: "blog" }));
+  return collectionExplorer("The journal", "Notes on design, making things, and everything in between.", items, "blog", initialTag);
+}
+
+function renderKnowledgeGraph(initialTag = "") {
+  return collectionExplorer("Knowledge graph", "A map of notes and projects, connected by the ideas they share.", allGraphItems(), "graph", initialTag);
+}
+
+function initializeCollectionExplorer(initialTag = "") {
+  const collection = app.querySelector(".vault-collection");
+  if (!collection) return;
+  const search = collection.querySelector("[data-note-search]");
+  const graphPanel = collection.querySelector("[data-graph-panel]");
+  const listPanel = collection.querySelector("[data-list-panel]");
+  const resultCount = collection.querySelector("[data-result-count]");
+  const noResults = collection.querySelector("[data-no-results]");
+  const graphNoResults = collection.querySelector("[data-graph-no-results]");
+  const countLabel = collection.dataset.collection === "graph" ? "item" : "note";
+  const modeButtons = collection.querySelectorAll("[data-view-mode]");
+  if (initialTag) search.value = initialTag;
+
+  const applyFilter = () => {
+    const term = search.value.trim().toLocaleLowerCase();
+    let visibleCount = 0;
+    collection.querySelectorAll("[data-note-card]").forEach((card) => {
+      const visible = !term || card.dataset.search.includes(term);
+      card.hidden = !visible;
+      if (visible) visibleCount += 1;
+    });
+    const graphItems = [...collection.querySelectorAll("[data-graph-item]")];
+    const visibleGraphNodes = new Map();
+    graphItems.forEach((node) => {
+      const visible = !term || node.dataset.search.includes(term);
+      node.classList.toggle("is-filtered", !visible);
+      visibleGraphNodes.set(node.dataset.graphItem, visible);
+    });
+    collection.querySelectorAll("[data-edge-note]").forEach((edge) => {
+      edge.classList.toggle("is-filtered", !visibleGraphNodes.get(edge.dataset.edgeNote));
+    });
+    collection.querySelectorAll("[data-tag-node]").forEach((tagNode) => {
+      const tag = tagNode.dataset.tagNode.toLocaleLowerCase();
+      const connected = graphItems.some((node) =>
+        visibleGraphNodes.get(node.dataset.graphItem) &&
+        JSON.parse(node.dataset.tags).includes(tag),
+      );
+      tagNode.classList.toggle("is-filtered", !connected);
+      tagNode.classList.toggle("is-selected", term === tag);
+    });
+    resultCount.textContent = `${visibleCount} ${visibleCount === 1 ? countLabel : `${countLabel}s`}`;
+    noResults.hidden = visibleCount > 0;
+    graphNoResults.hidden = visibleCount > 0;
+  };
+
+  const setView = (mode) => {
+    const graphVisible = mode === "graph";
+    graphPanel.hidden = !graphVisible;
+    listPanel.hidden = graphVisible;
+    modeButtons.forEach((button) => {
+      button.setAttribute("aria-pressed", String(button.dataset.viewMode === mode));
+    });
+  };
+
+  modeButtons.forEach((button) => button.addEventListener("click", () => setView(button.dataset.viewMode)));
+  search.addEventListener("input", applyFilter);
+  collection.addEventListener("click", (event) => {
+    const tagButton = event.target.closest("[data-select-tag]");
+    const graphTag = event.target.closest("[data-tag-node]");
+    const tag = tagButton?.dataset.selectTag || graphTag?.dataset.tagNode;
+    if (!tag) return;
+    search.value = tag;
+    applyFilter();
+  });
+  collection.addEventListener("keydown", (event) => {
+    if ((event.key === "Enter" || event.key === " ") && event.target.matches("[data-tag-node]")) {
+      event.preventDefault();
+      search.value = event.target.dataset.tagNode;
+      applyFilter();
+    }
+  });
+  applyFilter();
+  setView("graph");
 }
 
 function renderAbout() {
@@ -315,9 +500,25 @@ async function renderDetail(type, slug) {
   return `
     <article class="article-page">
       <a class="back-link" href="#/${type}">← Back to ${type}</a>
-      <header class="article-heading"><p class="eyebrow">${metadata}</p><h1>${escapeHtml(item.title)}</h1><p class="page-lead">${escapeHtml(isProject ? item.subtitle : item.excerpt)}</p>${actions ? `<div class="article-actions">${actions}</div>` : ""}</header>
+      <header class="article-heading"><p class="eyebrow">${metadata}</p><h1>${escapeHtml(item.title)}</h1><p class="page-lead">${escapeHtml(isProject ? item.subtitle : item.excerpt)}</p>${renderDetailTags(item.tags)}${actions ? `<div class="article-actions">${actions}</div>` : ""}</header>
       <div class="markdown-content">${renderMarkdown(markdown)}</div>
+      ${renderRelatedNotes(item, type)}
     </article>`;
+}
+
+function renderDetailTags(tags = []) {
+  if (!tags.length) return "";
+  return `<div class="detail-tags" aria-label="Note tags">${tags.map((tag) => `<a class="tag-chip" href="#/graph?tag=${encodeURIComponent(tag)}">#${escapeHtml(tag)}</a>`).join("")}</div>`;
+}
+
+function renderRelatedNotes(item, type) {
+  const related = [...posts.map((post) => ({ ...post, type: "blog" })), ...projects.map((project) => ({ ...project, type: "project" }))]
+    .filter((entry) => !(entry.type === (type === "projects" ? "project" : "blog") && entry.slug === item.slug))
+    .map((entry) => ({ entry, overlap: contentTags(entry).filter((tag) => contentTags(item).some((itemTag) => itemTag.toLocaleLowerCase() === tag.toLocaleLowerCase())) }))
+    .filter(({ overlap }) => overlap.length)
+    .slice(0, 4);
+  if (!related.length) return "";
+  return `<aside class="related-notes"><p class="eyebrow">BACKLINKS / SHARED TAGS</p><div>${related.map(({ entry, overlap }) => `<a class="related-note" href="${contentHref(entry)}"><span>${escapeHtml(entry.type === "project" ? "PROJECT" : "NOTE")} / ${escapeHtml(overlap.map((tag) => `#${tag}`).join(" "))}</span><strong>${escapeHtml(entry.title)}</strong></a>`).join("")}</div></aside>`;
 }
 
 function updateNavigation(route) {
@@ -332,7 +533,9 @@ function updateNavigation(route) {
 
 async function renderRoute() {
   const renderId = ++activeRender;
-  const route = decodeURIComponent(location.hash.replace(/^#\/?/, "") || "home");
+  const [hashPath, queryString = ""] = location.hash.replace(/^#\/?/, "").split("?", 2);
+  const route = decodeURIComponent(hashPath || "home");
+  const initialTag = new URLSearchParams(queryString).get("tag") || "";
   const [section, slug] = route.split("/");
   updateNavigation(route);
   navigation.classList.remove("is-open");
@@ -344,14 +547,16 @@ async function renderRoute() {
     let page;
     switch (section) {
       case "resume": page = renderResume(); break;
-      case "projects": page = slug ? await renderDetail("projects", slug) : renderProjects(); break;
-      case "blog": page = slug ? await renderDetail("blog", slug) : renderBlog(); break;
+      case "graph": page = renderKnowledgeGraph(initialTag); break;
+      case "projects": page = slug ? await renderDetail("projects", slug) : renderProjects(initialTag); break;
+      case "blog": page = slug ? await renderDetail("blog", slug) : renderBlog(initialTag); break;
       case "about": page = renderAbout(); break;
       case "contact": page = renderContact(); break;
       default: page = renderHome();
     }
     if (renderId !== activeRender) return;
     app.innerHTML = page;
+    initializeCollectionExplorer(initialTag);
     document.title = `${section === "home" ? site.name : section.charAt(0).toUpperCase() + section.slice(1)} — ${site.name}`;
     document.querySelector("#main-content").focus({ preventScroll: true });
   } catch (error) {
@@ -387,6 +592,12 @@ menuToggle.addEventListener("click", () => {
   menuToggle.setAttribute("aria-expanded", String(open));
   menuToggle.setAttribute("aria-label", open ? "Close navigation" : "Open navigation");
   navigation.classList.toggle("is-open", open);
+});
+
+app.addEventListener("click", (event) => {
+  const tagButton = event.target.closest("[data-select-tag]");
+  if (!tagButton || tagButton.closest(".vault-collection")) return;
+  location.hash = `#/graph?tag=${encodeURIComponent(tagButton.dataset.selectTag)}`;
 });
 
 themeToggle.addEventListener("click", () => {

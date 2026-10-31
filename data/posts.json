@@ -6,6 +6,7 @@
     "date": "2025-02-12",
     "readTime": "4 min read",
     "category": "Process",
+    "tags": ["Design process", "Craft", "Reflection"],
     "image": "",
     "imageAlt": "",
     "content": "content/posts/making-space-for-the-details.md"
@@ -17,6 +18,7 @@
     "date": "2024-11-06",
     "readTime": "6 min read",
     "category": "Design",
+    "tags": ["Interface design", "Accessibility", "Craft"],
     "image": "",
     "imageAlt": "",
     "content": "content/posts/a-small-guide-to-good-interfaces.md"
