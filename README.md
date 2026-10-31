@@ -1,6 +1,6 @@
 # Portfolio starter
 
-A clean, responsive portfolio built with plain HTML, CSS, and JavaScript. It has no build step or runtime dependencies and can be hosted directly on GitHub Pages.
+A responsive portfolio with a pixel-inspired visual style, light and dark themes, and content kept in JSON and Markdown. It uses plain HTML, CSS, and JavaScript, has no build step or runtime dependencies, and can be hosted directly on GitHub Pages. The theme toggle follows the visitor's system preference initially and remembers their choice in the browser.
 
 ## Make it yours
 

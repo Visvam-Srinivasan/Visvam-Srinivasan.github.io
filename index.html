@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#f6f5f0" />
+    <meta name="theme-color" content="#f5f1e7" />
     <meta
       name="description"
       content="A thoughtful portfolio of selected work, writing, and experience."
@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Space+Grotesk:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./assets/css/styles.css" />
@@ -25,6 +25,11 @@
         <span class="wordmark-mark">Y</span>
         <span data-site="name">Your Name</span>
       </a>
+      <div class="header-controls">
+        <button class="theme-toggle" type="button" aria-label="Switch to dark mode" title="Switch to dark mode">
+          <span aria-hidden="true">☾</span>
+          <span class="theme-toggle-label">LIGHT MODE</span>
+        </button>
       <button
         class="menu-toggle"
         type="button"
@@ -34,6 +39,7 @@
       >
         <span></span><span></span>
       </button>
+      </div>
       <nav class="navigation" id="primary-navigation" aria-label="Main navigation">
         <a href="#/resume" data-route="resume">Resume</a>
         <a href="#/projects" data-route="projects">Projects</a>

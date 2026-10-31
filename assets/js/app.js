@@ -1,6 +1,7 @@
 const app = document.querySelector("#app");
 const navigation = document.querySelector(".navigation");
 const menuToggle = document.querySelector(".menu-toggle");
+const themeToggle = document.querySelector(".theme-toggle");
 const currentYear = document.querySelector("#current-year");
 const baseUrl = new URL("../../", import.meta.url);
 const paths = {
@@ -15,6 +16,34 @@ let posts;
 let activeRender = 0;
 
 currentYear.textContent = new Date().getFullYear();
+
+function setTheme(theme, persist = false) {
+  const isDark = theme === "dark";
+  document.documentElement.dataset.theme = isDark ? "dark" : "light";
+  themeToggle.setAttribute("aria-label", `Switch to ${isDark ? "light" : "dark"} mode`);
+  themeToggle.title = `Switch to ${isDark ? "light" : "dark"} mode`;
+  themeToggle.querySelector('[aria-hidden="true"]').textContent = isDark ? "☀" : "☾";
+  themeToggle.querySelector(".theme-toggle-label").textContent = isDark ? "DARK MODE" : "LIGHT MODE";
+  document.querySelector('meta[name="theme-color"]').content = isDark ? "#171b24" : "#f5f1e7";
+  if (persist) {
+    try {
+      localStorage.setItem("portfolio-theme", isDark ? "dark" : "light");
+    } catch (error) {
+      console.error("Could not save the selected color theme.", error);
+    }
+  }
+}
+
+function initializeTheme() {
+  let savedTheme;
+  try {
+    savedTheme = localStorage.getItem("portfolio-theme");
+  } catch (error) {
+    console.error("Could not read the saved color theme.", error);
+  }
+  const preferredTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  setTheme(savedTheme === "dark" || savedTheme === "light" ? savedTheme : preferredTheme);
+}
 
 function escapeHtml(value = "") {
   return String(value).replace(/[&<>"']/g, (character) => {
@@ -360,5 +389,11 @@ menuToggle.addEventListener("click", () => {
   navigation.classList.toggle("is-open", open);
 });
 
+themeToggle.addEventListener("click", () => {
+  const nextTheme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+  setTheme(nextTheme, true);
+});
+
 window.addEventListener("hashchange", renderRoute);
+initializeTheme();
 start();
