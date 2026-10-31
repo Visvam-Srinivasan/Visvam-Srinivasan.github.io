@@ -1,0 +1,32 @@
+{
+  "summary": "A curious, detail-oriented designer and developer who brings thoughtful ideas to life. Replace this summary with a short introduction to your experience and what you do best.",
+  "experience": [
+    {
+      "role": "Your latest role",
+      "organization": "Company or studio",
+      "period": "2022 — Present",
+      "description": "Describe your impact, the people you worked with, and the work you’re proud of."
+    },
+    {
+      "role": "A previous role",
+      "organization": "Another company",
+      "period": "2019 — 2022",
+      "description": "Add a concise description focused on outcomes, craft, and collaboration."
+    }
+  ],
+  "education": [
+    {
+      "qualification": "Your degree or qualification",
+      "organization": "University or institution",
+      "period": "2015 — 2019"
+    }
+  ],
+  "skills": [
+    "Product design",
+    "Frontend development",
+    "Prototyping",
+    "Design systems",
+    "Writing"
+  ],
+  "file": "https://drive.google.com/file/d/19LfJvIEWXh6UbfQDHi1_76IsEYJQkq-P/view?usp=sharing"
+}

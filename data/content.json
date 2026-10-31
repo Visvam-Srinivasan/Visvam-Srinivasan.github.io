@@ -1,0 +1,171 @@
+{
+  "metaDescription": "A thoughtful portfolio of selected work, writing, and experience.",
+  "siteTitle": "Portfolio",
+  "navigation": {
+    "skip": "Skip to content",
+    "homeLabel": "{{name}} — home",
+    "graph": "Graph",
+    "resume": "Resume",
+    "projects": "Projects",
+    "blog": "Blog",
+    "about": "About",
+    "contact": "Get in touch",
+    "openMenu": "Open navigation",
+    "closeMenu": "Close navigation",
+    "mainLabel": "Main navigation"
+  },
+  "theme": {
+    "switchToLight": "Switch to light mode",
+    "switchToDark": "Switch to dark mode"
+  },
+  "footer": {
+    "tagline": "In a gentle way, you can shake the world.",
+    "backToTop": "Back to top"
+  },
+  "states": {
+    "loading": "A moment, please",
+    "pageErrorEyebrow": "Something went wrong",
+    "pageErrorTitle": "This page couldn’t load.",
+    "pageErrorLead": "Please check the content files and try again.",
+    "setupErrorEyebrow": "A setup issue",
+    "setupErrorTitle": "Couldn’t load the portfolio content.",
+    "setupErrorLead": "Check that you’re serving this folder over HTTP and that the JSON files in data/ are valid."
+  },
+  "home": {
+    "heroTitle": "Thoughtful work.",
+    "heroTitleEmphasis": "Made for people.",
+    "primaryAction": "Explore my work",
+    "aboutAction": "A little about me",
+    "artLabel": "CURRENTLY",
+    "artLabelDescription": "Abstract illustration",
+    "mapEyebrow": "MY NOTES IN CONTEXT",
+    "mapTitle": "Explore the vault",
+    "mapLead": "Follow the shared ideas between notes and projects.",
+    "mapAction": "Open full graph",
+    "graphLabel": "Portfolio knowledge graph",
+    "graphHelp": "Drag nodes to rearrange. Choose a note to open it, or a #tag to explore its connections.",
+    "workEyebrow": "A few things I’ve made",
+    "workTitle": "Selected work",
+    "projectsAction": "All projects",
+    "beliefAction": "More about me",
+    "journalEyebrow": "Notes from the process",
+    "journalTitle": "Recent writing",
+    "blogAction": "All writing"
+  },
+  "collections": {
+    "projects": {
+      "eyebrow": "THE VAULT / PROJECTS",
+      "title": "Projects",
+      "lead": "A collection of things I’ve helped bring into the world. Follow shared tags or browse the project notes.",
+      "searchPlaceholder": "Search projects and tags…",
+      "searchLabel": "Search projects and tags",
+      "paneGroup": "Show or hide project panes",
+      "graphToggle": "Graph",
+      "listToggle": "Projects",
+      "graphRegion": "Project graph",
+      "graphEyebrow": "01 / CONNECTIONS",
+      "graphTitle": "Project graph",
+      "minimizeGraph": "Minimize project graph",
+      "graphHelp": "Drag nodes to rearrange. Featured projects glow amber; select a project or tag to explore.",
+      "graphNoResults": "No connected projects match that search.",
+      "restoreGraph": "Show graph",
+      "listRegion": "Project list",
+      "listEyebrow": "02 / PROJECT NOTES",
+      "listTitle": "All projects",
+      "minimizeList": "Minimize project list",
+      "restoreList": "Show project list",
+      "featured": "Featured",
+      "featuredCount": "PINNED / {{count}}",
+      "other": "More projects",
+      "otherCount": "{{count}} NOTES",
+      "noResults": "No projects match that search. Try another word or tag."
+    },
+    "blog": {
+      "eyebrow": "THE VAULT / BLOG",
+      "title": "The journal",
+      "lead": "Notes on design, making things, and everything in between. Follow shared tags or browse the latest writing.",
+      "searchPlaceholder": "Search writing and tags…",
+      "searchLabel": "Search writing and tags",
+      "paneGroup": "Show or hide blog panes",
+      "graphToggle": "Graph",
+      "listToggle": "Writing",
+      "graphRegion": "Blog graph",
+      "graphEyebrow": "01 / CONNECTIONS",
+      "graphTitle": "Journal graph",
+      "minimizeGraph": "Minimize journal graph",
+      "graphHelp": "Drag nodes to rearrange. Select a note or tag to explore connected writing.",
+      "graphNoResults": "No connected notes match that search.",
+      "restoreGraph": "Show graph",
+      "listRegion": "Blog list",
+      "listEyebrow": "02 / JOURNAL NOTES",
+      "listTitle": "All writing",
+      "minimizeList": "Minimize journal list",
+      "restoreList": "Show writing",
+      "noResults": "No writing matches that search. Try another word or tag."
+    },
+    "graph": {
+      "eyebrow": "THE VAULT / VAULT ITEMS",
+      "title": "Knowledge graph",
+      "lead": "A map of notes and projects, connected by the ideas they share.",
+      "singular": "item",
+      "plural": "items",
+      "searchPlaceholder": "Search notes and tags…",
+      "searchLabel": "Search notes and tags",
+      "viewGroup": "Choose collection view",
+      "graphToggle": "Graph",
+      "listToggle": "List",
+      "resultCount": {
+        "singular": "{{count}} item",
+        "plural": "{{count}} items"
+      },
+      "legendNote": "note",
+      "legendTag": "shared tag",
+      "graphHelp": "Drag nodes to rearrange. Select a note to open it or select a #tag node to filter.",
+      "graphNoResults": "No connected notes match that search.",
+      "noResults": "No items match that search. Try another word or tag."
+    }
+  },
+  "graph": {
+    "empty": "No notes to connect yet.",
+    "tagFilterLabel": "Filter by tag {{tag}}",
+    "tagExploreLabel": "Explore the {{tag}} tag",
+    "openItemLabel": "Open {{title}}",
+    "description": "{{label}} connecting notes around central tags",
+    "tagGroupLabel": "Note tags"
+  },
+  "about": {
+    "eyebrow": "A little introduction",
+    "titlePrefix": "Hello, I’m ",
+    "titleSuffix": ".",
+    "valuesHeading": "A few things I value"
+  },
+  "resume": {
+    "eyebrow": "Experience & skills",
+    "title": "The resume",
+    "lead": "A snapshot of what I’ve done and what I bring.",
+    "downloadLabel": "Download resume PDF",
+    "experienceHeading": "Experience",
+    "educationHeading": "Education",
+    "skillsHeading": "A few skills"
+  },
+  "contact": {
+    "eyebrow": "Have a good one in mind?",
+    "titlePrefix": "Let’s make it ",
+    "titleEmphasis": "happen.",
+    "lead": "Tell me a little about what you’re working on. I’d love to hear about it.",
+    "panelEyebrow": "For projects, conversations, or a nice hello"
+  },
+  "detail": {
+    "notFoundEyebrow": "Not found",
+    "notFoundTitle": "Nothing here just yet.",
+    "notFoundLead": "This page may have moved or the link may be incorrect.",
+    "backTo": "Back to {{section}}",
+    "visitProject": "Visit project",
+    "viewSource": "View source",
+    "tagsLabel": "Note tags",
+    "backlinksEyebrow": "BACKLINKS / SHARED TAGS",
+    "projectKind": "PROJECT",
+    "noteKind": "NOTE"
+  },
+  "locale": "en"
+}

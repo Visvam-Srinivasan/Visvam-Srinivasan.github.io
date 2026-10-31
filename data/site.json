@@ -1,8 +1,8 @@
 {
-  "name": "Your Name",
-  "role": "Designer & developer",
-  "location": "Based in Your City",
-  "email": "hello@example.com",
+  "name": "Visvam Srinivasan",
+  "role": "Engineer",
+  "location": "Chennai, Tamil Nadu",
+  "email": "visvamsrinivasan@gmail.com",
   "availability": "Available for select projects",
   "belief": "I believe the best work comes from being curious, staying kind, and caring about the details.",
   "artCaption": "A little intention goes a long way.",
@@ -12,9 +12,8 @@
     "Over the past few years, I’ve partnered with kind people and ambitious teams to make products that feel considered, work beautifully, and make a real difference. Outside of work, you’ll find me collecting books, taking long walks, or trying a new recipe."
   ],
   "socials": [
-    { "label": "LinkedIn", "url": "https://www.linkedin.com/" },
-    { "label": "GitHub", "url": "https://github.com/" },
-    { "label": "Instagram", "url": "https://www.instagram.com/" }
+    { "label": "LinkedIn", "url": "https://www.linkedin.com/in/visvam-srinivasan/" },
+    { "label": "GitHub", "url": "https://github.com/Visvam-Srinivasan" }
   ],
   "values": [
     "Curiosity over certainty",
@@ -22,31 +21,5 @@
     "Making things together",
     "Work with a little meaning"
   ],
-  "resume": {
-    "summary": "A curious, detail-oriented designer and developer who brings thoughtful ideas to life. Replace this summary with a short introduction to your experience and what you do best.",
-    "experience": [
-      {
-        "role": "Your latest role",
-        "organization": "Company or studio",
-        "period": "2022 — Present",
-        "description": "Describe your impact, the people you worked with, and the work you’re proud of."
-      },
-      {
-        "role": "A previous role",
-        "organization": "Another company",
-        "period": "2019 — 2022",
-        "description": "Add a concise description focused on outcomes, craft, and collaboration."
-      }
-    ],
-    "education": [
-      {
-        "qualification": "Your degree or qualification",
-        "organization": "University or institution",
-        "period": "2015 — 2019"
-      }
-    ],
-    "skills": ["Product design", "Frontend development", "Prototyping", "Design systems", "Writing"]
-  },
-  "resumeFile": "",
   "featuredPosts": ["making-space-for-the-details", "a-small-guide-to-good-interfaces"]
 }
