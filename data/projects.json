@@ -1,0 +1,44 @@
+[
+  {
+    "slug": "field-notes",
+    "title": "Field Notes",
+    "subtitle": "A calmer way to collect ideas",
+    "category": "Product · 2025",
+    "description": "A thoughtful home for the little observations that turn into big ideas.",
+    "image": "",
+    "imageAlt": "",
+    "accent": "peach",
+    "tags": ["Product design", "Research", "Prototyping"],
+    "liveUrl": "",
+    "repoUrl": "",
+    "content": "content/projects/field-notes.md"
+  },
+  {
+    "slug": "goodside",
+    "title": "Goodside",
+    "subtitle": "Better choices, made a little easier",
+    "category": "Brand & digital · 2024",
+    "description": "A friendly identity and digital experience for a more considered everyday.",
+    "image": "",
+    "imageAlt": "",
+    "accent": "sage",
+    "tags": ["Brand identity", "Web design", "Development"],
+    "liveUrl": "",
+    "repoUrl": "",
+    "content": "content/projects/goodside.md"
+  },
+  {
+    "slug": "open-studio",
+    "title": "Open Studio",
+    "subtitle": "A more human kind of portfolio",
+    "category": "Web · 2024",
+    "description": "A simple, flexible publishing toolkit for independent creatives.",
+    "image": "",
+    "imageAlt": "",
+    "accent": "lavender",
+    "tags": ["Frontend", "Accessibility", "Open source"],
+    "liveUrl": "",
+    "repoUrl": "",
+    "content": "content/projects/open-studio.md"
+  }
+]
