@@ -146,14 +146,17 @@
     "downloadLabel": "Download resume PDF",
     "experienceHeading": "Experience",
     "educationHeading": "Education",
+    "gradeLabel": "Grade",
     "skillsHeading": "A few skills"
   },
   "contact": {
-    "eyebrow": "Have a good one in mind?",
-    "titlePrefix": "Let’s make it ",
-    "titleEmphasis": "happen.",
-    "lead": "Tell me a little about what you’re working on. I’d love to hear about it.",
-    "panelEyebrow": "For projects, conversations, or a nice hello"
+    "eyebrow": "Want to collaborate?",
+    "titlePrefix": "Reach ",
+    "titleEmphasis": "out!",
+    "lead": "Would love to hear any questions, suggestions or opportunities!",
+    "panelEyebrow": "For projects, conversations, or a nice hello",
+    "emailLabel": "Email",
+    "socialAction": "Connect"
   },
   "detail": {
     "notFoundEyebrow": "Not found",

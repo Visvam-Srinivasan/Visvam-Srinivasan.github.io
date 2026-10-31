@@ -1,6 +1,6 @@
 {
   "name": "Visvam Srinivasan",
-  "role": "Engineer",
+  "role": "Software Engineer",
   "location": "Chennai, Tamil Nadu",
   "email": "visvamsrinivasan@gmail.com",
   "availability": "Available for select projects",
@@ -8,20 +8,20 @@
   "artCaption": "A little intention goes a long way.",
   "intro": "I make useful things for the web, with a focus on clear thinking and thoughtful details.",
   "about": [
-    "I’m a multidisciplinary creative who enjoys turning complicated ideas into simple, useful experiences. My work sits somewhere between design, technology, and a healthy curiosity about how things work.",
-    "Over the past few years, I’ve partnered with kind people and ambitious teams to make products that feel considered, work beautifully, and make a real difference. Outside of work, you’ll find me collecting books, taking long walks, or trying a new recipe."
+    "I am a Final-Year B.E. CSE student at College of Engineering Guindy, Anna University. I am currently exploring the world of embedded software, low-level code, machine learning and AI and something I have started now - Robotics!",
+    "I actively work on new projects, learning more about the entire engineering process. As the current Chairperson at ACM-CEG, my team and I are instilling curisity for computers amongst the students of CEG through events, sessions, mentorship programs, etc.",
+    "Outside of academics, projects and club work, you will find me making music, designing, cycling and hitting the gym."
   ],
-  "aboutImage": "assets/images/about-placeholder.svg",
+  "aboutImage": "assets/images/profile_photo.jpeg",
   "aboutImageAlt": "Illustrated placeholder portrait; replace with a personal photo",
   "socials": [
     { "label": "LinkedIn", "url": "https://www.linkedin.com/in/visvam-srinivasan/" },
     { "label": "GitHub", "url": "https://github.com/Visvam-Srinivasan" }
   ],
   "values": [
-    "Curiosity over certainty",
-    "Care in the details",
-    "Making things together",
-    "Work with a little meaning"
+    "Curiosity",
+    "Persistance",
+    "Enterprising"
   ],
   "featuredPosts": ["making-space-for-the-details", "a-small-guide-to-good-interfaces"]
 }

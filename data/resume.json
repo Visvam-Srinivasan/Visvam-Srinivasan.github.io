@@ -1,32 +1,33 @@
 {
-  "summary": "A curious, detail-oriented designer and developer who brings thoughtful ideas to life. Replace this summary with a short introduction to your experience and what you do best.",
+  "summary": "A curious and enterprising developer focused on creating impactful products.",
   "experience": [
     {
-      "role": "Your latest role",
-      "organization": "Company or studio",
-      "period": "2022 — Present",
-      "description": "Describe your impact, the people you worked with, and the work you’re proud of."
-    },
-    {
-      "role": "A previous role",
-      "organization": "Another company",
-      "period": "2019 — 2022",
-      "description": "Add a concise description focused on outcomes, craft, and collaboration."
+      "role": "Software Engineer Summer-Intern",
+      "organization": "Western Digital",
+      "period": "May 2026 - July 2026",
+      "description": "- Explored and understood the architecture of the JBOD Platform products of WD.- Worked in a team of 3 which was tasked to plan, design, code, test and deploy two projects in the span of two months.- Contributed to improvement in developer workflow by creating a Linux Resource monitoring, logging and analytics system to provide insights on how the Out of Band Management (OOBM) system's OS is performing and how specific RedFish API endpoints and ssh commands to OOBM affect resource availability. This allowed developers to analyze how the firmware to handle requests is functioning with the Linux environment. - Improved testing workflow by creating an automated RedFish API crawler that flags potential incorrectly defined firmware code for specific API endpoints."
     }
   ],
   "education": [
     {
-      "qualification": "Your degree or qualification",
-      "organization": "University or institution",
-      "period": "2015 — 2019"
+      "qualification": "B.E. Computer Science and Engineering",
+      "organization": "CEG, Anna University",
+      "period": "2023 - Present",
+      "grade": "9.04"
+    },
+    {
+      "qualification": "CBSE Class 12",
+      "organization": "PSBB SSS",
+      "period": "2023",
+      "grade": "96%"
     }
   ],
   "skills": [
-    "Product design",
-    "Frontend development",
-    "Prototyping",
-    "Design systems",
-    "Writing"
+    "C",
+    "C++",
+    "Linux",
+    "Machine Learning",
+    "Embedded Systems"
   ],
   "file": "https://drive.google.com/file/d/19LfJvIEWXh6UbfQDHi1_76IsEYJQkq-P/view?usp=sharing"
 }

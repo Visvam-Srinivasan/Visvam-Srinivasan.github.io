@@ -924,7 +924,7 @@ function renderResume() {
   const experience = (resume.experience || []).map((item) => `
     <article class="resume-entry"><div class="resume-entry-main"><h3>${escapeHtml(item.role)}</h3><p>${escapeHtml(item.organization)}</p><span>${escapeHtml(item.description)}</span></div><time>${escapeHtml(item.period)}</time></article>`).join("");
   const education = (resume.education || []).map((item) => `
-    <article class="resume-entry"><div class="resume-entry-main"><h3>${escapeHtml(item.qualification)}</h3><p>${escapeHtml(item.organization)}</p></div><time>${escapeHtml(item.period)}</time></article>`).join("");
+    <article class="resume-entry"><div class="resume-entry-main"><h3>${escapeHtml(item.qualification)}</h3><p>${escapeHtml(item.organization)}</p>${item.grade ? `<p class="resume-grade"><strong>${escapeHtml(labels.gradeLabel)}:</strong> ${escapeHtml(item.grade)}</p>` : ""}</div><time>${escapeHtml(item.period)}</time></article>`).join("");
   const resumeUrl = safeUrl(resume.file);
   const driveFileId = resumeUrl.match(/^https:\/\/drive\.google\.com\/file\/d\/([^/?#]+)/i)?.[1];
   const resumeHref = driveFileId
@@ -942,11 +942,11 @@ function renderContact() {
   const labels = copy.contact;
   const email = safeUrl(`mailto:${site.email || ""}`);
   const socials = (site.socials || [])
-    .map((social) => `<a class="social-link" ${linkAttributes(social.url)}>${escapeHtml(social.label)} <span aria-hidden="true">↗</span></a>`)
+    .map((social) => `<a class="contact-method" ${linkAttributes(social.url)}><span class="contact-method-label">${escapeHtml(social.label)}</span><strong>${escapeHtml(labels.socialAction)}</strong><span class="contact-method-arrow" aria-hidden="true">↗</span></a>`)
     .join("");
   const title = `${escapeHtml(labels.titlePrefix)}<span class="serif-accent">${escapeHtml(labels.titleEmphasis)}</span>`;
   return shell(labels.eyebrow, title, labels.lead, `
-    <div class="contact-panel"><span class="contact-icon" aria-hidden="true">↗</span><p class="eyebrow">${escapeHtml(labels.panelEyebrow)}</p><a class="contact-email" href="${escapeHtml(email)}">${escapeHtml(site.email)}</a><div class="social-links">${socials}</div></div>`);
+    <div class="contact-panel"><span class="contact-icon" aria-hidden="true">↗</span><p class="eyebrow">${escapeHtml(labels.panelEyebrow)}</p><div class="contact-methods"><a class="contact-method contact-email" href="${escapeHtml(email)}"><span class="contact-method-label">${escapeHtml(labels.emailLabel)}</span><strong>${escapeHtml(site.email)}</strong><span class="contact-method-arrow" aria-hidden="true">↗</span></a>${socials}</div></div>`);
 }
 
 async function renderDetail(type, slug) {

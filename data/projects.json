@@ -1,19 +1,5 @@
 [
   {
-    "slug": "field-notes",
-    "title": "Field Notes",
-    "subtitle": "A calmer way to collect ideas",
-    "category": "Product · 2025",
-    "description": "A thoughtful home for the little observations that turn into big ideas.",
-    "image": "",
-    "imageAlt": "",
-    "accent": "peach",
-    "tags": ["Featured", "Product design", "Research", "Interface design"],
-    "liveUrl": "",
-    "repoUrl": "",
-    "content": "content/projects/field-notes.md"
-  },
-  {
     "slug": "goodside",
     "title": "Goodside",
     "subtitle": "Better choices, made a little easier",
@@ -26,19 +12,5 @@
     "liveUrl": "",
     "repoUrl": "",
     "content": "content/projects/goodside.md"
-  },
-  {
-    "slug": "open-studio",
-    "title": "Open Studio",
-    "subtitle": "A more human kind of portfolio",
-    "category": "Web · 2024",
-    "description": "A simple, flexible publishing toolkit for independent creatives.",
-    "image": "",
-    "imageAlt": "",
-    "accent": "lavender",
-    "tags": ["Featured", "Frontend", "Accessibility", "Interface design"],
-    "liveUrl": "",
-    "repoUrl": "",
-    "content": "content/projects/open-studio.md"
   }
 ]
