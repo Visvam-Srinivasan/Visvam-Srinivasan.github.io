@@ -630,7 +630,7 @@ function renderProjects(initialTag = "") {
   const other = items.filter((project) => !featured.includes(project));
   const projectList = (entries) => entries.map(projectCard).join("");
   return `
-    <section class="page-section projects-workspace vault-collection" data-collection="projects" data-graph-visible="true" data-list-visible="true">
+    <section class="page-section projects-workspace split-workspace vault-collection" data-collection="projects" data-graph-visible="true" data-list-visible="true">
       <header class="page-heading"><p class="eyebrow"><span class="eyebrow-dot"></span>THE VAULT / PROJECTS</p><h1>Projects</h1><p class="page-lead">A collection of things I’ve helped bring into the world. Follow shared tags or browse the project notes.</p></header>
       <div class="workspace-toolbar">
         <label class="note-search"><span aria-hidden="true">⌕</span><input type="search" data-note-search placeholder="Search projects and tags…" aria-label="Search projects and tags" value="${escapeHtml(initialTag)}"></label>
@@ -639,15 +639,15 @@ function renderProjects(initialTag = "") {
           <button type="button" data-toggle-pane="list" aria-pressed="true"><span aria-hidden="true">☷</span> Projects</button>
         </div>
       </div>
-      <div class="project-panes">
-        <section class="project-pane graph-pane" data-project-pane="graph" aria-label="Project graph">
-          <header class="project-pane-heading"><div><p class="eyebrow">01 / CONNECTIONS</p><h2>Project graph</h2></div><button class="pane-minimize" type="button" data-collapse-pane="graph" aria-label="Minimize project graph" title="Minimize graph">−</button></header>
+      <div class="workspace-panes">
+        <section class="workspace-pane graph-pane" data-workspace-pane="graph" aria-label="Project graph">
+          <header class="workspace-pane-heading"><div><p class="eyebrow">01 / CONNECTIONS</p><h2>Project graph</h2></div><button class="pane-minimize" type="button" data-collapse-pane="graph" aria-label="Minimize project graph" title="Minimize graph">−</button></header>
           <div class="pane-graph-wrap" data-graph-panel>${renderGraph(items, "Project graph")}<p class="graph-help">Drag nodes to rearrange. Featured projects glow amber; select a project or tag to explore.</p><p class="graph-no-results" data-graph-no-results hidden>No connected projects match that search.</p></div>
           <button class="pane-restore" type="button" data-restore-pane="graph" hidden>＋ Show graph</button>
         </section>
-        <section class="project-pane project-list-pane" data-project-pane="list" aria-label="Project list">
-          <header class="project-pane-heading"><div><p class="eyebrow">02 / PROJECT NOTES</p><h2>All projects <span data-project-count>${projects.length}</span></h2></div><button class="pane-minimize" type="button" data-collapse-pane="list" aria-label="Minimize project list" title="Minimize list">−</button></header>
-          <div class="project-list-content" data-list-panel>
+        <section class="workspace-pane workspace-list-pane" data-workspace-pane="list" aria-label="Project list">
+          <header class="workspace-pane-heading"><div><p class="eyebrow">02 / PROJECT NOTES</p><h2>All projects <span data-workspace-count>${projects.length}</span></h2></div><button class="pane-minimize" type="button" data-collapse-pane="list" aria-label="Minimize project list" title="Minimize list">−</button></header>
+          <div class="workspace-list-content" data-list-panel>
             ${featured.length ? `<section class="featured-projects"><div class="list-section-heading"><h3>Featured</h3><span>PINNED / ${String(featured.length).padStart(2, "0")}</span></div><div class="project-card-list">${projectList(featured)}</div></section>` : ""}
             <section class="other-projects"><div class="list-section-heading"><h3>More projects</h3><span>${String(other.length).padStart(2, "0")} NOTES</span></div><div class="project-card-list">${projectList(other)}</div></section>
             <p class="no-results" data-no-results hidden>No projects match that search. Try another word or tag.</p>
@@ -662,22 +662,43 @@ function renderBlog(initialTag = "") {
   const items = [...posts]
     .sort((a, b) => new Date(b.date) - new Date(a.date))
     .map((post) => ({ ...post, type: "blog" }));
-  return collectionExplorer("The journal", "Notes on design, making things, and everything in between.", items, "blog", initialTag);
+  const cards = items.map(postCard).join("");
+  return `
+    <section class="page-section blog-workspace split-workspace vault-collection" data-collection="blog" data-graph-visible="true" data-list-visible="true">
+      <header class="page-heading"><p class="eyebrow"><span class="eyebrow-dot"></span>THE VAULT / BLOG</p><h1>The journal</h1><p class="page-lead">Notes on design, making things, and everything in between. Follow shared tags or browse the latest writing.</p></header>
+      <div class="workspace-toolbar">
+        <label class="note-search"><span aria-hidden="true">⌕</span><input type="search" data-note-search placeholder="Search writing and tags…" aria-label="Search writing and tags" value="${escapeHtml(initialTag)}"></label>
+        <div class="workspace-pane-toggles" role="group" aria-label="Show or hide blog panes">
+          <button type="button" data-toggle-pane="graph" aria-pressed="true"><span aria-hidden="true">◉</span> Graph</button>
+          <button type="button" data-toggle-pane="list" aria-pressed="true"><span aria-hidden="true">☷</span> Writing</button>
+        </div>
+      </div>
+      <div class="workspace-panes">
+        <section class="workspace-pane graph-pane" data-workspace-pane="graph" aria-label="Blog graph">
+          <header class="workspace-pane-heading"><div><p class="eyebrow">01 / CONNECTIONS</p><h2>Journal graph</h2></div><button class="pane-minimize" type="button" data-collapse-pane="graph" aria-label="Minimize journal graph" title="Minimize graph">−</button></header>
+          <div class="pane-graph-wrap" data-graph-panel>${renderGraph(items, "Journal graph")}<p class="graph-help">Drag nodes to rearrange. Select a note or tag to explore connected writing.</p><p class="graph-no-results" data-graph-no-results hidden>No connected notes match that search.</p></div>
+          <button class="pane-restore" type="button" data-restore-pane="graph" hidden>＋ Show graph</button>
+        </section>
+        <section class="workspace-pane workspace-list-pane" data-workspace-pane="list" aria-label="Blog list">
+          <header class="workspace-pane-heading"><div><p class="eyebrow">02 / JOURNAL NOTES</p><h2>All writing <span data-workspace-count>${items.length}</span></h2></div><button class="pane-minimize" type="button" data-collapse-pane="list" aria-label="Minimize journal list" title="Minimize list">−</button></header>
+          <div class="workspace-list-content blog-list-content" data-list-panel><div class="blog-card-list">${cards}</div><p class="no-results" data-no-results hidden>No writing matches that search. Try another word or tag.</p></div>
+          <button class="pane-restore" type="button" data-restore-pane="list" hidden>＋ Show writing</button>
+        </section>
+      </div>
+    </section>`;
 }
 
 function renderKnowledgeGraph(initialTag = "") {
   return collectionExplorer("Knowledge graph", "A map of notes and projects, connected by the ideas they share.", allGraphItems(), "graph", initialTag);
 }
 
-function initializeProjectsWorkspace(collection, initialTag = "") {
+function initializeSplitWorkspace(collection, initialTag = "") {
   const search = collection.querySelector("[data-note-search]");
-  const graphPane = collection.querySelector('[data-project-pane="graph"]');
-  const listPane = collection.querySelector('[data-project-pane="list"]');
-  const graphPanel = collection.querySelector("[data-graph-panel]");
-  const listPanel = collection.querySelector("[data-list-panel]");
+  const graphPane = collection.querySelector('[data-workspace-pane="graph"]');
+  const listPane = collection.querySelector('[data-workspace-pane="list"]');
   const noResults = collection.querySelector("[data-no-results]");
   const graphNoResults = collection.querySelector("[data-graph-no-results]");
-  const projectCount = collection.querySelector("[data-project-count]");
+  const resultCount = collection.querySelector("[data-workspace-count]");
   const toggleButtons = collection.querySelectorAll("[data-toggle-pane]");
   if (initialTag) search.value = initialTag;
 
@@ -731,7 +752,7 @@ function initializeProjectsWorkspace(collection, initialTag = "") {
     });
     noResults.hidden = visibleCount > 0;
     graphNoResults.hidden = visibleCount > 0;
-    projectCount.textContent = String(visibleCount);
+    resultCount.textContent = String(visibleCount);
   };
 
   toggleButtons.forEach((button) => button.addEventListener("click", () => togglePane(button.dataset.togglePane)));
@@ -763,8 +784,8 @@ function initializeProjectsWorkspace(collection, initialTag = "") {
 function initializeCollectionExplorer(initialTag = "") {
   const collection = app.querySelector(".vault-collection");
   if (!collection) return;
-  if (collection.dataset.collection === "projects") {
-    initializeProjectsWorkspace(collection, initialTag);
+  if (collection.dataset.collection === "projects" || collection.dataset.collection === "blog") {
+    initializeSplitWorkspace(collection, initialTag);
     return;
   }
   const search = collection.querySelector("[data-note-search]");
