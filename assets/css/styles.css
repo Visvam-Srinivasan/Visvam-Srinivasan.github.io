@@ -812,3 +812,71 @@ html[data-theme="dark"] .pane-graph-wrap .graph-help { background: var(--white);
   .project-card-list .project-card { grid-template-columns: 72px minmax(0, 1fr); padding: 8px; column-gap: 9px; }
   .project-card-list .project-cover { width: 72px; height: 68px; }
 }
+
+body { font-size: 16px; }
+.navigation a { font-size: 14px; }
+.hero-intro { font-size: 18px; }
+.page-lead, .article-heading .page-lead { font-size: 17px; }
+.project-card h3, .post-card h3 { font-size: 24px; }
+.project-card > p, .post-card > p { font-size: 15px; }
+.card-meta, .post-date, .read-time { font-size: 11px; }
+.about-copy > p { font-size: 18px; }
+.social-link { font-size: 14px; }
+.about-aside li { font-size: 15px; }
+.resume-summary > p { font-size: 17px; }
+.resume-entry-main h3 { font-size: 16px; }
+.resume-entry-main p { font-size: 14px; }
+.resume-entry-main span { font-size: 14px; }
+.resume-entry time { font-size: 11px; }
+.skill-list span { font-size: 13px; }
+.markdown-content { font-size: 17px; }
+.site-footer { font-size: 12px; }
+.note-search input { font-size: 14px; }
+.view-switch button, .workspace-pane-toggles button { min-height: 36px; padding-right: 14px; padding-left: 14px; font-size: 13px; }
+.view-switch button[aria-pressed="true"], .workspace-pane-toggles button[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--paper);
+  font-weight: 700;
+  box-shadow: 0 0 0 2px var(--orange);
+}
+.about-portrait { margin: 0 0 23px; overflow: hidden; aspect-ratio: 4 / 5; border: 1px solid var(--line); border-radius: 6px; background: var(--white); }
+.about-portrait img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.graph-tag-label { font-size: 13px; }
+.graph-item-node text { font-size: 14px; }
+.graph-column-label { font-size: 11px; }
+.graph-help { font-size: 12px; }
+.graph-no-results, .graph-empty { font-size: 13px; }
+.collection-meta { font-size: 11px; }
+.tag-chip { font-size: 11px; }
+.related-note span { font-size: 10px; }
+.related-note strong, .no-results { font-size: 14px; }
+.workspace-pane-heading .eyebrow { font-size: 10px; }
+.workspace-pane-heading h2 { font-size: 17px; }
+.workspace-pane-heading h2 span { font-size: 11px; }
+.list-section-heading h3 { font-size: 14px; }
+.list-section-heading span { font-size: 10px; }
+.blog-card-list .post-card h3 { font-size: 17px; }
+.blog-card-list .post-card > p { font-size: 14px; line-height: 1.6; }
+.blog-card-list .tag-chip { font-size: 10px; }
+.project-card-list .card-meta { font-size: 10px; }
+.project-card-list .project-card h3 { font-size: 16px; line-height: 1.45; }
+.project-card-list .project-card > p { font-size: 14px; line-height: 1.6; }
+.project-card-list .tag-chip { font-size: 10px; }
+.home-map .section-heading .page-lead { font-size: 15px; }
+
+@media (max-width: 640px) {
+  .navigation a { font-size: 15px; }
+  .hero-intro, .page-lead, .article-heading .page-lead, .markdown-content { font-size: 16px; }
+  .project-card h3, .post-card h3 { font-size: 23px; }
+  .project-card > p, .post-card > p { font-size: 15px; }
+  .about-copy > p { font-size: 17px; }
+  .resume-summary > p { font-size: 16px; }
+  .resume-entry-main h3 { font-size: 15px; }
+  .resume-entry-main p, .resume-entry-main span { font-size: 13px; }
+  .resume-entry time { font-size: 10px; }
+  .skill-list span { font-size: 12px; }
+  .site-footer { font-size: 11px; }
+  .project-card-list .project-card h3 { font-size: 16px; }
+  .project-card-list .project-card > p, .blog-card-list .post-card > p { font-size: 14px; }
+  .workspace-pane-toggles button, .view-switch button { min-height: 38px; font-size: 14px; }
+}

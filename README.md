@@ -4,7 +4,7 @@ A responsive, Obsidian-inspired portfolio with a linked knowledge graph, graph/l
 
 ## Make it yours
 
-1. Edit `data/site.json` with your name, role, location, email, bio, and social links. Edit `data/content.json` for page headings, interface copy, labels, and navigation text.
+1. Edit `data/site.json` with your name, role, location, email, bio, social links, and About image path/alt text. Replace `assets/images/about-placeholder.svg` with your portrait or update `aboutImage` to point to another image. Edit `data/content.json` for page headings, interface copy, labels, and navigation text.
 2. Edit `data/projects.json` and `data/posts.json` to add or reorder project and blog cards. Give each entry a `tags` array (for example, `"tags": ["Interface design", "Accessibility"]`). Tags with the same spelling connect notes and projects automatically; add `Featured` to a project's tags to include it in the featured project sections.
 3. Write each project or post in its own Markdown file under `content/projects/` or `content/posts/`.
 4. Put images in `assets/images/` and use a relative path such as `assets/images/project-cover.jpg` in the matching JSON entry's `image` field. Leave it blank for the built-in color treatment.

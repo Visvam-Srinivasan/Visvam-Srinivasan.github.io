@@ -64,7 +64,8 @@ function escapeHtml(value = "") {
 
 function safeUrl(value = "") {
   const url = String(value).trim();
-  if (/^(https?:|mailto:|tel:|\/|\.\/|\.\.\/|#)/i.test(url)) return url;
+  if (/^(https?:|mailto:|tel:|\/|\.\/|\.\.\/|#)/i.test(url) ||
+      /^[a-z0-9][a-z0-9._/-]*(?:[?#][^\s]*)?$/i.test(url)) return url;
   return "";
 }
 
@@ -293,7 +294,15 @@ function renderGraph(items, label, linkTags = false) {
     const tagId = tag.toLocaleLowerCase();
     const featuredTag = tagId === "featured";
     tagPositions.set(tagId, center);
-    layoutNodes.push({ key: `tag:${tagId}`, type: "tag", x: center.x, y: center.y, anchorX: center.x, anchorY: center.y, radius: 45 });
+    layoutNodes.push({
+      key: `tag:${tagId}`,
+      type: "tag",
+      x: center.x,
+      y: center.y,
+      anchorX: center.x,
+      anchorY: center.y,
+      radius: 45,
+    });
     const tagNode = `<g class="graph-tag-node${featuredTag ? " is-featured" : ""}" data-graph-node data-graph-key="tag:${escapeHtml(tagId)}" data-node-x="${center.x}" data-node-y="${center.y}" data-tag-node="${escapeHtml(tag)}" role="button" tabindex="0" aria-label="${escapeHtml(copyText(copy.graph.tagFilterLabel, { tag }))}" transform="translate(${center.x} ${center.y})"><circle r="29"/><text class="graph-hash" y="5">#</text><text class="graph-tag-label" y="47">${escapeHtml(tag)}</text></g>`;
     tagNodes.push(linkTags ? `<a class="graph-tag-link" href="#/graph?tag=${encodeURIComponent(tag)}" aria-label="${escapeHtml(copyText(copy.graph.tagExploreLabel, { tag }))}">${tagNode}</a>` : tagNode);
   });
@@ -391,7 +400,6 @@ function optimizeGraphLayout(nodes, items, width, height) {
     return orientation(a, b, c) * orientation(a, b, d) < 0 &&
       orientation(c, d, a) * orientation(c, d, b) < 0;
   };
-
   for (let iteration = 0; iteration < iterations; iteration += 1) {
     const forces = new Map(nodes.map((node) => [node.key, { x: 0, y: 0 }]));
     const buckets = new Map();
@@ -469,6 +477,7 @@ function optimizeGraphLayout(nodes, items, width, height) {
       node.x = Math.min(width - 95, Math.max(95, node.x + node.vx));
       node.y = Math.min(height - 70, Math.max(55, node.y + node.vy));
     });
+
   }
 }
 
@@ -900,13 +909,14 @@ function initializeCollectionExplorer(initialTag = "") {
 
 function renderAbout() {
   const labels = copy.about;
+  const imageUrl = safeUrl(site.aboutImage);
   const socials = (site.socials || [])
     .map((social) => `<a class="social-link" ${linkAttributes(social.url)}>${escapeHtml(social.label)} <span aria-hidden="true">↗</span></a>`)
     .join("");
   const title = `${escapeHtml(labels.titlePrefix)}<span class="serif-accent">${escapeHtml(site.name)}</span>${escapeHtml(labels.titleSuffix)}`;
   return shell(labels.eyebrow, title, "", `
     <div class="about-layout"><div class="about-copy">${(site.about || []).map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join("")}<div class="social-links">${socials}</div></div>
-    <aside class="about-aside"><div class="aside-mark" aria-hidden="true">✳</div><p class="eyebrow">${escapeHtml(labels.valuesHeading)}</p><ul>${(site.values || []).map((value) => `<li>${escapeHtml(value)}</li>`).join("")}</ul></aside></div>`);
+    <aside class="about-aside"><div class="aside-mark" aria-hidden="true">✳</div>${imageUrl ? `<figure class="about-portrait"><img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(site.aboutImageAlt || "")}"></figure>` : ""}<p class="eyebrow">${escapeHtml(labels.valuesHeading)}</p><ul>${(site.values || []).map((value) => `<li>${escapeHtml(value)}</li>`).join("")}</ul></aside></div>`);
 }
 
 function renderResume() {
